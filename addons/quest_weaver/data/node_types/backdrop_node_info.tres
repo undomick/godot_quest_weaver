@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NodeTypeInfo" load_steps=3 format=3 uid="uid://wjmt2d3ch83p"]
+
+[ext_resource type="Script" uid="uid://c47hlc1kqxrwc" path="res://addons/quest_weaver/data/node_type_info.gd" id="1_fv866"]
+[ext_resource type="Script" uid="uid://3pgp0wnqa8nv" path="res://addons/quest_weaver/graph/nodes/backdrop_node_resource.gd" id="1_mo6vb"]
+
+[resource]
+script = ExtResource("1_fv866")
+node_name = "Backdrop"
+node_script = ExtResource("1_mo6vb")
+editor_scene_path = "uid://c2h34yf52xl1f"
+executor_script_path = ""
+role = 1
+default_size = 3
+metadata/_custom_type_script = "uid://c47hlc1kqxrwc"

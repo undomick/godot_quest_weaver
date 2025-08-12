@@ -1,0 +1,54 @@
+[gd_scene load_steps=3 format=3 uid="uid://jmguya1cwte8"]
+
+[ext_resource type="Script" uid="uid://bi6gxv1l3bdbe" path="res://addons/quest_weaver/ui/editor/properties_panel.gd" id="1_yqbrr"]
+[ext_resource type="Theme" uid="uid://ccxtg65xjhu81" path="res://addons/quest_weaver/assets/themes/quest_weaver_theme.tres" id="2_f45u1"]
+
+[node name="PropertiesPanel" type="Window"]
+transparent_bg = true
+title = "Node Properties"
+position = Vector2i(0, 36)
+size = Vector2i(350, 350)
+visible = false
+wrap_controls = true
+script = ExtResource("1_yqbrr")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="ContentContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="NodeTypeLabel" type="Label" parent="MarginContainer/ContentContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("2_f45u1")
+theme_type_variation = &"HeaderMedium"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/ContentContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/ContentContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/ContentContainer/ScrollContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="PropertyFieldsContainer" type="VBoxContainer" parent="MarginContainer/ContentContainer/ScrollContainer/MarginContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3

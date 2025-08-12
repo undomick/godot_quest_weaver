@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://dgxdobw007uyo"]
+
+[ext_resource type="Script" uid="uid://dknimcs3o3rfp" path="res://addons/quest_weaver/ui/node_properties/timer_node_editor.gd" id="1_5yq8v"]
+
+[node name="TimerNodeEditor" type="VBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_5yq8v")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Duration (s): "
+
+[node name="DurationEdit" type="LineEdit" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "2.5"

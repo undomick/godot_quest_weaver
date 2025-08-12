@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://blpjthjvcp6jc"]
+
+[ext_resource type="Script" uid="uid://co7yxqagamhke" path="res://addons/quest_weaver/ui/dialogs/quest_file_dialog.gd" id="1_hrex2"]
+
+[node name="QuestFileDialog" type="FileDialog"]
+initial_position = 2
+visible = true
+script = ExtResource("1_hrex2")

@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3 uid="uid://c6otrjyfvfpba"]
+
+[ext_resource type="Script" uid="uid://dxchlpky3dtrr" path="res://addons/quest_weaver/ui/node_properties/task_node_editor.gd" id="1_1bls6"]
+
+[node name="TaskNodeEditor" type="VBoxContainer"]
+custom_minimum_size = Vector2(100, 100)
+offset_right = 40.0
+offset_bottom = 40.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_1bls6")
+
+[node name="AddObjectiveButton" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 30)
+layout_mode = 2
+text = "Add Objective"
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "Objectives"
+
+[node name="ObjectivesList" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_vertical = 3

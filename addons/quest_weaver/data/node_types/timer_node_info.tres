@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="NodeTypeInfo" load_steps=3 format=3 uid="uid://cq3ddck1i2o8m"]
+
+[ext_resource type="Script" uid="uid://c47hlc1kqxrwc" path="res://addons/quest_weaver/data/node_type_info.gd" id="1_5uf8s"]
+[ext_resource type="Script" uid="uid://c1ymjfvf0ia83" path="res://addons/quest_weaver/graph/nodes/timer_node_resource.gd" id="1_o81yx"]
+
+[resource]
+resource_local_to_scene = true
+script = ExtResource("1_5uf8s")
+node_name = "Timer"
+node_script = ExtResource("1_o81yx")
+editor_scene_path = "uid://dgxdobw007uyo"
+executor_script_path = "uid://d77yd1y64sxw"
+role = 1
+default_size = 2
+metadata/_custom_type_script = "uid://c47hlc1kqxrwc"

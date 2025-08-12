@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NodeTypeInfo" load_steps=3 format=3 uid="uid://6gt3or7jmf44"]
+
+[ext_resource type="Script" uid="uid://c47hlc1kqxrwc" path="res://addons/quest_weaver/data/node_type_info.gd" id="1_64lwm"]
+[ext_resource type="Script" uid="uid://d2qqiwkkoty56" path="res://addons/quest_weaver/graph/nodes/show_ui_message_node_resource.gd" id="1_fulyh"]
+
+[resource]
+script = ExtResource("1_64lwm")
+node_name = "Show UI Message"
+node_script = ExtResource("1_fulyh")
+editor_scene_path = "uid://efkk82glwqs2"
+executor_script_path = "uid://bq1ominmmd2fk"
+role = 1
+default_size = 2
+metadata/_custom_type_script = "uid://c47hlc1kqxrwc"

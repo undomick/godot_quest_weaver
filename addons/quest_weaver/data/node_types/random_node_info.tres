@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NodeTypeInfo" load_steps=3 format=3 uid="uid://3yk3kbp5nnqd"]
+
+[ext_resource type="Script" uid="uid://b2w2t28bxfkdt" path="res://addons/quest_weaver/graph/nodes/random_node_resource.gd" id="1_0fw57"]
+[ext_resource type="Script" uid="uid://c47hlc1kqxrwc" path="res://addons/quest_weaver/data/node_type_info.gd" id="1_jhjwp"]
+
+[resource]
+script = ExtResource("1_jhjwp")
+node_name = "Random Node"
+node_script = ExtResource("1_0fw57")
+editor_scene_path = "uid://c7mnlvgsin1u4"
+executor_script_path = "uid://b3acacyi14p2v"
+role = 1
+default_size = 4
+metadata/_custom_type_script = "uid://c47hlc1kqxrwc"

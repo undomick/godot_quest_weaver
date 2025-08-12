@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NodeTypeInfo" load_steps=3 format=3 uid="uid://peh3hkgaww5l"]
+
+[ext_resource type="Script" uid="uid://c47hlc1kqxrwc" path="res://addons/quest_weaver/data/node_type_info.gd" id="1_0yrwp"]
+[ext_resource type="Script" uid="uid://jg6lbblo1tf1" path="res://addons/quest_weaver/graph/nodes/play_cutscene_node_resource.gd" id="1_jd2yk"]
+
+[resource]
+script = ExtResource("1_0yrwp")
+node_name = "Play Cutscene"
+node_script = ExtResource("1_jd2yk")
+editor_scene_path = "uid://q4bgigjmikn5"
+executor_script_path = "uid://cwt5js7ahf0a7"
+role = 1
+default_size = 1
+metadata/_custom_type_script = "uid://c47hlc1kqxrwc"

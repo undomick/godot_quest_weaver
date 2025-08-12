@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://rd5k6w347t03"]
+
+[ext_resource type="Script" uid="uid://b8jqjax1gewow" path="res://addons/quest_weaver/ui/editors/parallel_node_editor.gd" id="1_utiop"]
+
+[node name="ParallelNodeEditor" type="VBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_utiop")
+
+[node name="AddOutputButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Add Output Port"
+
+[node name="OutputsContainer" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2

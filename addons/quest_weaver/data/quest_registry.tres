@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="QuestRegistry" load_steps=2 format=3 uid="uid://wmyp5edipqt5"]
+
+[ext_resource type="Script" uid="uid://c4a2r4gsgoabg" path="res://addons/quest_weaver/data/quest_registry.gd" id="1_3vag5"]
+
+[resource]
+script = ExtResource("1_3vag5")
+registered_quest_ids = Array[String](["first_steps", "new_dump_task", "side_hit_enter"])
+metadata/_custom_type_script = "uid://c4a2r4gsgoabg"

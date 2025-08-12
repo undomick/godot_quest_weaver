@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://dk7p6fdmp4wma"]
+
+[ext_resource type="Script" uid="uid://cq1t57ktvqp6v" path="res://addons/quest_weaver/ui/node_properties/wait_node_editor.gd" id="1_v1ae1"]
+
+[node name="WaitNodeEditor" type="VBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_v1ae1")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Wait Duration (sec): "
+
+[node name="WaitDurationEdit" type="LineEdit" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "2.5"

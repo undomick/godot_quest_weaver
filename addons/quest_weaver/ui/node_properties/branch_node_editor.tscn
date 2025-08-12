@@ -1,0 +1,33 @@
+[gd_scene load_steps=2 format=3 uid="uid://daa5kumhadh1k"]
+
+[ext_resource type="Script" uid="uid://bvij56vq3n4es" path="res://addons/quest_weaver/ui/node_properties/branch_node_editor.gd" id="1_rmfmm"]
+
+[node name="BranchNodeEditor" type="VBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_rmfmm")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Logic: "
+
+[node name="OperatorPicker" type="OptionButton" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AddConditionButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Add Condition"
+
+[node name="ConditionsList" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_vertical = 3

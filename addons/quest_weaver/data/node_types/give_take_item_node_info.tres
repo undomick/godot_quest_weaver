@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NodeTypeInfo" load_steps=3 format=3 uid="uid://di84hmg1bxgh3"]
+
+[ext_resource type="Script" uid="uid://3hlfu4hxgu4w" path="res://addons/quest_weaver/graph/nodes/give_take_item_node_resource.gd" id="1_l6qk3"]
+[ext_resource type="Script" uid="uid://c47hlc1kqxrwc" path="res://addons/quest_weaver/data/node_type_info.gd" id="2_5raku"]
+
+[resource]
+script = ExtResource("2_5raku")
+node_name = "Give or Take Item"
+node_script = ExtResource("1_l6qk3")
+editor_scene_path = "uid://41qktips0nb3"
+executor_script_path = "uid://dx71828qjltv6"
+role = 1
+default_size = 2
+metadata/_custom_type_script = "uid://c47hlc1kqxrwc"

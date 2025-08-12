@@ -1,0 +1,14 @@
+[remap]
+
+importer="quest_weaver.importer"
+type="Resource"
+uid="uid://diaw6ttqhybqr"
+path="res://.godot/imported/side_just_hit_enter.quest-6bab4f5df0347e896c95157522a517d5.tres"
+
+[deps]
+
+source_file="res://addons/quest_weaver/examples/quests/side/side_just_hit_enter.quest"
+dest_files=["res://.godot/imported/side_just_hit_enter.quest-6bab4f5df0347e896c95157522a517d5.tres"]
+
+[params]
+

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NodeTypeInfo" load_steps=3 format=3 uid="uid://c1jdio6e2b6t8"]
+
+[ext_resource type="Script" uid="uid://d27uimjan8qg1" path="res://addons/quest_weaver/graph/nodes/set_variable_node_resource.gd" id="1_owlq1"]
+[ext_resource type="Script" uid="uid://c47hlc1kqxrwc" path="res://addons/quest_weaver/data/node_type_info.gd" id="2_yc8pi"]
+
+[resource]
+script = ExtResource("2_yc8pi")
+node_name = "Set Variable"
+node_script = ExtResource("1_owlq1")
+editor_scene_path = "uid://bcxfmkhrqik6d"
+executor_script_path = "uid://dtplsf1s2xipk"
+role = 1
+default_size = 1
+metadata/_custom_type_script = "uid://c47hlc1kqxrwc"

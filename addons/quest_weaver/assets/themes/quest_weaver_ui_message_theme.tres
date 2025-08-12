@@ -1,0 +1,9 @@
+[gd_resource type="Theme" format=3 uid="uid://mtmkw0xcdqtj"]
+
+[resource]
+HeaderLarge/base_type = &"RichTextLabel"
+HeaderLarge/font_sizes/normal_font_size = 32
+HeaderMedium/base_type = &"RichTextLabel"
+HeaderMedium/font_sizes/normal_font_size = 24
+HeaderSmall/base_type = &"RichTextLabel"
+HeaderSmall/font_sizes/normal_font_size = 20

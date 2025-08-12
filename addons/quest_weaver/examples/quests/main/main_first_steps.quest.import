@@ -1,0 +1,14 @@
+[remap]
+
+importer="quest_weaver.importer"
+type="Resource"
+uid="uid://bpjp0ofo6vlku"
+path="res://.godot/imported/main_first_steps.quest-95b81e73ea0de3c8fe6e69b1e2b55352.tres"
+
+[deps]
+
+source_file="res://addons/quest_weaver/examples/quests/main/main_first_steps.quest"
+dest_files=["res://.godot/imported/main_first_steps.quest-95b81e73ea0de3c8fe6e69b1e2b55352.tres"]
+
+[params]
+

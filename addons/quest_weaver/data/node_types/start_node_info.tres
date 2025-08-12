@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NodeTypeInfo" load_steps=3 format=3 uid="uid://cp82pq71vvtaq"]
+
+[ext_resource type="Script" uid="uid://ehnttlt4vjyt" path="res://addons/quest_weaver/graph/nodes/start_node_resource.gd" id="1_8jemn"]
+[ext_resource type="Script" uid="uid://c47hlc1kqxrwc" path="res://addons/quest_weaver/data/node_type_info.gd" id="2_60dff"]
+
+[resource]
+script = ExtResource("2_60dff")
+node_name = "Start"
+node_script = ExtResource("1_8jemn")
+editor_scene_path = ""
+executor_script_path = ""
+role = 0
+default_size = 0
+metadata/_custom_type_script = "uid://c47hlc1kqxrwc"

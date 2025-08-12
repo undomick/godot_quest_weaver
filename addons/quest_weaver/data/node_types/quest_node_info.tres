@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NodeTypeInfo" load_steps=3 format=3 uid="uid://deujchjg3pawv"]
+
+[ext_resource type="Script" uid="uid://5me4socqptnc" path="res://addons/quest_weaver/graph/nodes/quest_node_resource.gd" id="1_3yugg"]
+[ext_resource type="Script" uid="uid://c47hlc1kqxrwc" path="res://addons/quest_weaver/data/node_type_info.gd" id="1_886r2"]
+
+[resource]
+script = ExtResource("1_886r2")
+node_name = "Quest Manipulator"
+node_script = ExtResource("1_3yugg")
+editor_scene_path = "uid://cpxwe2qsigy4g"
+executor_script_path = "uid://cfe8pe6lyjnkq"
+role = 1
+default_size = 1
+metadata/_custom_type_script = "uid://c47hlc1kqxrwc"

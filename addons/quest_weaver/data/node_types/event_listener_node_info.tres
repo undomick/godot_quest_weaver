@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NodeTypeInfo" load_steps=3 format=3 uid="uid://dkmmowqg1al1i"]
+
+[ext_resource type="Script" uid="uid://bskmawvlx16qk" path="res://addons/quest_weaver/graph/nodes/event_listener_node_resource.gd" id="1_4l0oy"]
+[ext_resource type="Script" uid="uid://c47hlc1kqxrwc" path="res://addons/quest_weaver/data/node_type_info.gd" id="1_5fjdm"]
+
+[resource]
+script = ExtResource("1_5fjdm")
+node_name = "Event Listener"
+node_script = ExtResource("1_4l0oy")
+editor_scene_path = "uid://cgrbd1g8idtfj"
+executor_script_path = "uid://sivqvkbrmcgm"
+role = 1
+default_size = 3
+metadata/_custom_type_script = "uid://c47hlc1kqxrwc"

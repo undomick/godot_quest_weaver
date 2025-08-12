@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="QWItemRegistry" load_steps=6 format=3 uid="uid://joenm0bc2epp"]
+
+[ext_resource type="Script" uid="uid://iogyrkfpnou4" path="res://addons/quest_weaver/examples/resources/qw_item_definition.gd" id="1_s5ld1"]
+[ext_resource type="Script" uid="uid://duj860ptbqrsj" path="res://addons/quest_weaver/examples/resources/qw_item_registry.gd" id="2_1x6ug"]
+[ext_resource type="Resource" uid="uid://c2mmix15juf7t" path="res://addons/quest_weaver/examples/resources/items/foliant.tres" id="2_555y8"]
+[ext_resource type="Resource" uid="uid://dnvdae52mmoky" path="res://addons/quest_weaver/examples/resources/items/health_potion.tres" id="3_is5b2"]
+[ext_resource type="Resource" uid="uid://e5ukbimyw2vi" path="res://addons/quest_weaver/examples/resources/items/metal_scraps.tres" id="4_ad8tj"]
+
+[resource]
+script = ExtResource("2_1x6ug")
+item_definitions = Array[ExtResource("1_s5ld1")]([ExtResource("2_555y8"), ExtResource("3_is5b2"), ExtResource("4_ad8tj")])
+metadata/_custom_type_script = "uid://duj860ptbqrsj"

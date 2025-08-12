@@ -1,0 +1,14 @@
+[remap]
+
+importer="quest_weaver.importer"
+type="Resource"
+uid="uid://c8uth5m7ch37y"
+path="res://.godot/imported/side_dump_task.quest-dddd4a138aacbec0002468f2961b1c3d.tres"
+
+[deps]
+
+source_file="res://addons/quest_weaver/examples/quests/side/side_dump_task.quest"
+dest_files=["res://.godot/imported/side_dump_task.quest-dddd4a138aacbec0002468f2961b1c3d.tres"]
+
+[params]
+

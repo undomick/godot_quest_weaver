@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NodeTypeInfo" load_steps=3 format=3 uid="uid://b5t80fb4cqtjo"]
+
+[ext_resource type="Script" uid="uid://cmr2scwyxuv2a" path="res://addons/quest_weaver/graph/nodes/start_scope_node_resource.gd" id="1_ict0n"]
+[ext_resource type="Script" uid="uid://c47hlc1kqxrwc" path="res://addons/quest_weaver/data/node_type_info.gd" id="1_xeldv"]
+
+[resource]
+script = ExtResource("1_xeldv")
+node_name = "Start Scope"
+node_script = ExtResource("1_ict0n")
+editor_scene_path = "uid://dx2w1ardcrnu6"
+executor_script_path = "uid://ckmpuyx1usbou"
+role = 1
+default_size = 1
+metadata/_custom_type_script = "uid://c47hlc1kqxrwc"
