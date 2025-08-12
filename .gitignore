@@ -11,6 +11,12 @@ builds/
 *.apk
 *.aab
 
+# Imported translations (automatically generated from CSV files)
+*.translation
+
+# Mono-specific ignores
 .mono/
 bin/
 obj/
+data_*/
+mono_crash.*.json
