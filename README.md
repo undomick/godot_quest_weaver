@@ -1,6 +1,4 @@
-# Quest Weaver for Godot 4
-
-![Quest Weaver Banner](https://raw.githubusercontent.com/undomick/godot_quest_weaver/main/docs/media/logo_banner_questWeaver.png)
+<img src="docs/media/logo_banner_questWeaver.png" width="512" height="128">
 
 **Quest Weaver** is a powerful, flexible, and node-based quest editor plugin for Godot 4.4+. Designed from the ground up to be both user-friendly for designers and easily extensible for developers, it provides a complete solution for creating complex narratives and dynamic gameplay objectives directly within the Godot editor.
 
