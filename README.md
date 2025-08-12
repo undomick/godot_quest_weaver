@@ -4,6 +4,8 @@
 
 Stop juggling dictionaries and hard-coded logic. Start weaving your story, one node at a time.
 
+<img src="docs/media/QWScreenshot_simpleTask.png" width="960">
+
 ## Table of Contents
 
 -   [Core Features](#core-features)
