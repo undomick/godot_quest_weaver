@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dm3sw0037snpa"
-path="res://.godot/imported/logo_banner_questWeaver.png-ef58bfeae823fcf4daa460d9491d486a.ctex"
+uid="uid://bjm066jhirj7a"
+path="res://.godot/imported/QWScreenshot_simpleTask.png-63c1d3a1feede67bc4f24799d8eda22e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/media/logo_banner_questWeaver.png"
-dest_files=["res://.godot/imported/logo_banner_questWeaver.png-ef58bfeae823fcf4daa460d9491d486a.ctex"]
+source_file="res://docs/media/QWScreenshot_simpleTask.png"
+dest_files=["res://.godot/imported/QWScreenshot_simpleTask.png-63c1d3a1feede67bc4f24799d8eda22e.ctex"]
 
 [params]
 
