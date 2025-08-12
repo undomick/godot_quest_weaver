@@ -8,8 +8,9 @@ var _item_registry = null
 var _player_inventory_data = null
 var _is_initialized_successfully := false
 
-# This function is called by the QuestController.
-# It finds the necessary game singletons and connects signals.
+# This adapter isn't necessary for Quest Weaver to operate. 
+# It is a bridge to my other plugin "Nexus Inventory". You can ignore it for now.
+
 func initialize() -> void:
 	if not Engine.has_singleton("NexusServices") or not Engine.has_singleton("GameManager"):
 		push_error("QuestWeaver (NexusInventoryAdapter): The 'NexusServices' or 'GameManager' autoloads were not found. This adapter will not function.")
@@ -75,7 +76,7 @@ func give_item(item_id: String, amount: int) -> void:
 	# Phase 2: Adding new stacks
 	while remaining_amount > 0:
 		var stack_size = min(remaining_amount, definition.max_stack_size)
-		var new_item = Item.new(definition, stack_size)
+		var new_item = QWItem.new(definition, stack_size)
 		
 		var spot = _inv_controller.find_first_free_spot_for_size(_player_inventory_data, new_item.get_display_size())
 		if spot != Vector2i(-1, -1):
