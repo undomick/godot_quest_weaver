@@ -1,4 +1,4 @@
-# res://addons/quest_weaver/examples/simple_inventory/simple_item_registry.gd
+# res://addons/quest_weaver/examples/resources/qw_item_registry.gd
 @tool
 class_name QWItemRegistry
 extends Resource

@@ -1,16 +1,14 @@
 [gd_resource type="Resource" script_class="QuestWeaverSettings" load_steps=2 format=3 uid="uid://e1d3a25kticw"]
 
-[ext_resource type="Script" uid="uid://dup5r1ylyhuxo" path="res://addons/quest_weaver/data/quest_weaver_settings.gd" id="1_ugjl6"]
+[ext_resource type="Script" uid="uid://dup5r1ylyhuxo" path="res://addons/quest_weaver/core/quest_weaver_settings.gd" id="1_ugjl6"]
 
 [resource]
 script = ExtResource("1_ugjl6")
-game_state_singleton_name = &"GameState"
 inventory_adapter_script = "uid://btnuywtd8ra2r"
 presentation_registry_path = "uid://ds3oso48ofcph"
 item_registry_path = "uid://joenm0bc2epp"
 quest_scan_folder = "res://addons/quest_weaver/examples/quests"
-localization_csv_path = ""
-node_type_registry_path = "uid://5x387pi344mc"
+auto_start_quests = Array[String](["uid://ct3wy6g0awjqv"])
 quest_registry_path = "uid://wmyp5edipqt5"
 editor_data_path = "uid://dysspp0gwx0fx"
 metadata/_custom_type_script = "uid://dup5r1ylyhuxo"

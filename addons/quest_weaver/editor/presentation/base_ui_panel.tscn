@@ -1,0 +1,61 @@
+[gd_scene load_steps=3 format=3 uid="uid://dc0tdbjewc6xm"]
+
+[ext_resource type="Script" uid="uid://brdjpvwqrye0e" path="res://addons/quest_weaver/editor/presentation/base_ui_panel.gd" id="1_5wt03"]
+[ext_resource type="Theme" uid="uid://mtmkw0xcdqtj" path="res://addons/quest_weaver/assets/themes/quest_weaver_ui_message_theme.tres" id="2_g1oun"]
+
+[node name="BaseUIPanel" type="MarginContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_g1oun")
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_top = 200
+theme_override_constants/margin_right = 100
+theme_override_constants/margin_bottom = 100
+script = ExtResource("1_5wt03")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+self_modulate = Color(1, 1, 1, 0.196078)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+mouse_filter = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 2
+
+[node name="TitleLabel" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.921569)
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 2
+theme_type_variation = &"HeaderLarge"
+bbcode_enabled = true
+text = "Title Text"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+horizontal_alignment = 1
+
+[node name="MessageLabel" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.862745)
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+bbcode_enabled = true
+text = "Description"
+fit_content = true
+scroll_active = false
+horizontal_alignment = 1

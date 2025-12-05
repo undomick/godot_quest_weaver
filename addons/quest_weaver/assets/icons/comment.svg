@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="comment">
+        <path d="M8,12L3.75,12C2.232,12 1,10.768 1,9.25L1,3.75C1,2.232 2.232,1 3.75,1L12.25,1C13.768,1 15,2.232 15,3.75L15,9.25C15,10.768 13.768,12 12.25,12L11,12L11,15L8,12ZM8.707,11.293L10,12.586L10,12C10,11.448 10.448,11 11,11L12.25,11C13.216,11 14,10.216 14,9.25L14,3.75C14,2.784 13.216,2 12.25,2L3.75,2C2.784,2 2,2.784 2,3.75L2,9.25C2,10.216 2.784,11 3.75,11L8,11C8.265,11 8.52,11.105 8.707,11.293Z" style="fill:white;"/>
+        <circle cx="5" cy="6" r="1" style="fill:white;"/>
+        <circle cx="8" cy="6" r="1" style="fill:white;"/>
+        <circle cx="11" cy="6" r="1" style="fill:white;"/>
+    </g>
+</svg>

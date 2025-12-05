@@ -1,4 +1,4 @@
-# res://addons/quest_weaver/examples/simple_inventory/item.gd
+# res://addons/quest_weaver/examples/resources/qw_item.gd
 class_name QWItem
 extends RefCounted
 

@@ -1,0 +1,14 @@
+[remap]
+
+importer="quest_weaver.importer"
+type="Resource"
+uid="uid://eabhgb17mi5w"
+path="res://.godot/imported/start_first_task.quest-af4b96b07a235fc558e5dd663ae68563.tres"
+
+[deps]
+
+source_file="res://addons/quest_weaver/examples/quests/main/start_first_task.quest"
+dest_files=["res://.godot/imported/start_first_task.quest-af4b96b07a235fc558e5dd663ae68563.tres"]
+
+[params]
+

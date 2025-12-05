@@ -1,4 +1,4 @@
-# res://addons/quest_weaver/examples/simple_inventory/simple_item_definition.gd
+# res://addons/quest_weaver/examples/resources/qw_item_definition.gd
 class_name QWItemDefinition
 extends Resource
 

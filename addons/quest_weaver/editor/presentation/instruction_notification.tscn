@@ -1,0 +1,64 @@
+[gd_scene load_steps=5 format=3 uid="uid://c4s0tdg6s20ab"]
+
+[ext_resource type="Theme" uid="uid://mtmkw0xcdqtj" path="res://addons/quest_weaver/assets/themes/quest_weaver_ui_message_theme.tres" id="1_di5c4"]
+[ext_resource type="Script" uid="uid://brdjpvwqrye0e" path="res://addons/quest_weaver/editor/presentation/base_ui_panel.gd" id="2_767bq"]
+
+[sub_resource type="Gradient" id="Gradient_di5c4"]
+offsets = PackedFloat32Array(0, 0.712687)
+colors = PackedColorArray(0, 0, 0, 0.321569, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_767bq"]
+gradient = SubResource("Gradient_di5c4")
+
+[node name="InstructionUIPanel" type="MarginContainer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_right = -1.0
+offset_bottom = 58.0
+size_flags_horizontal = 3
+size_flags_vertical = 0
+mouse_filter = 2
+theme = ExtResource("1_di5c4")
+script = ExtResource("2_767bq")
+
+[node name="ColorRect" type="TextureRect" parent="."]
+layout_mode = 2
+texture = SubResource("GradientTexture1D_767bq")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+
+[node name="TitleLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.921569)
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 2
+theme_type_variation = &"HeaderMedium"
+bbcode_enabled = true
+text = "Title Text"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+horizontal_alignment = 1
+
+[node name="MessageLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+modulate = Color(1, 1, 1, 0.862745)
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+bbcode_enabled = true
+text = "Description"
+fit_content = true
+scroll_active = false
+horizontal_alignment = 1

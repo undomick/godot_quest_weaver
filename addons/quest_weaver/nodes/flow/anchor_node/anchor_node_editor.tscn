@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://d4e1perp4lmu0"]
+
+[ext_resource type="Script" uid="uid://btbr58f3v356w" path="res://addons/quest_weaver/nodes/flow/anchor_node/anchor_node_editor.gd" id="1_pf6yt"]
+
+[node name="AnchorNodeEditor" type="VBoxContainer"]
+script = ExtResource("1_pf6yt")
+
+[node name="AnchorNameEdit" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 2

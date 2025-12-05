@@ -1,0 +1,14 @@
+[remap]
+
+importer="quest_weaver.importer"
+type="Resource"
+uid="uid://ct3wy6g0awjqv"
+path="res://.godot/imported/questline.quest-7d7ad3bde271684750464ce029ba7506.tres"
+
+[deps]
+
+source_file="res://addons/quest_weaver/examples/quests/main/questline.quest"
+dest_files=["res://.godot/imported/questline.quest-7d7ad3bde271684750464ce029ba7506.tres"]
+
+[params]
+

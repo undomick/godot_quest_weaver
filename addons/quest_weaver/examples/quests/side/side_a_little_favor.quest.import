@@ -1,0 +1,14 @@
+[remap]
+
+importer="quest_weaver.importer"
+type="Resource"
+uid="uid://b4gnlcliufk84"
+path="res://.godot/imported/side_a_little_favor.quest-d49ffabc8281eef9611c28fc9b31afbf.tres"
+
+[deps]
+
+source_file="res://addons/quest_weaver/examples/quests/side/side_a_little_favor.quest"
+dest_files=["res://.godot/imported/side_a_little_favor.quest-d49ffabc8281eef9611c28fc9b31afbf.tres"]
+
+[params]
+

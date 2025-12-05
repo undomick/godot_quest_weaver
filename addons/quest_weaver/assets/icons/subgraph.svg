@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="subgraph">
+        <g transform="matrix(1,0,0,1.22222,-2,-3.11111)">
+            <path d="M15,13.182L15,14C15,14.452 14.552,14.818 14,14.818L3,14.818C2.448,14.818 2,14.452 2,14L2,5C2,4.548 2.448,4.182 3,4.182L14,4.182C14.552,4.182 15,4.548 15,5L15,7.455L14,7.455L14,5L3,5L3,14L14,14L14,13.182L15,13.182ZM15,8.273L15,9.091L14,9.091L14,8.273L15,8.273ZM15,9.909L15,10.727L14,10.727L14,9.909L15,9.909ZM15,11.545L15,12.364L14,12.364L14,11.545L15,11.545Z" style="fill:white;"/>
+        </g>
+        <g transform="matrix(1.09091,0,0,1,-0.272727,0)">
+            <path d="M14.917,5L14.917,14C14.917,14.552 14.506,15 14,15L3,15C2.494,15 2.083,14.552 2.083,14L2.083,5C2.083,4.448 2.494,4 3,4L14,4C14.506,4 14.917,4.448 14.917,5ZM14,5L3,5L3,14L14,14L14,5Z" style="fill:white;"/>
+        </g>
+        <rect x="11" y="6" width="1" height="1" style="fill:white;"/>
+        <rect x="11" y="8" width="1" height="1" style="fill:white;"/>
+        <rect x="11" y="10" width="1" height="1" style="fill:white;"/>
+        <rect x="11" y="12" width="1" height="1" style="fill:white;"/>
+    </g>
+</svg>

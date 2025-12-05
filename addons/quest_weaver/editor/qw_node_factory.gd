@@ -1,0 +1,90 @@
+# res://addons/quest_weaver/editor/qw_node_factory.gd
+@tool
+class_name QWNodeFactory
+extends Node
+
+# Signal to request backdrop creation. 
+# This logic involves reading the selection from the GraphController, 
+# which is handled by the main editor logic.
+signal create_backdrop_requested
+
+# --- Dependencies ---
+var _node_registry: NodeTypeRegistry
+var _data_manager: QWGraphData
+var _history: QWEditorHistory
+var _graph_controller: QuestWeaverGraphController
+var _add_node_menu: NodeSelectionMenu
+var _editor: QuestWeaverEditor # Reference to the main editor for selection/inspection logic
+
+# --- State ---
+var _pending_node_creation_pos: Vector2
+var _pending_connection_data: Dictionary
+var _is_initialized := false
+
+
+func initialize(p_editor: QuestWeaverEditor, p_registry: NodeTypeRegistry, p_data_manager: QWGraphData, p_history: QWEditorHistory, p_graph_controller: QuestWeaverGraphController, p_menu: NodeSelectionMenu) -> void:
+	self._editor = p_editor
+	self._node_registry = p_registry
+	self._data_manager = p_data_manager
+	self._history = p_history
+	self._graph_controller = p_graph_controller
+	self._add_node_menu = p_menu
+	
+	if not _add_node_menu.is_connected("node_selected", _on_node_selected_from_menu):
+		_add_node_menu.node_selected.connect(_on_node_selected_from_menu)
+
+
+func show_add_node_menu(screen_position: Vector2, connect_from_data: Dictionary = {}) -> void:
+	if not _is_initialized:
+		_add_node_menu.set_available_nodes(_node_registry.node_types)
+		_is_initialized = true
+	
+	var zoom = _graph_controller.zoom
+	var scroll = _graph_controller.scroll_offset
+	# Mouse position relative to the graph edit control
+	var local_mouse = _graph_controller.get_local_mouse_position()
+	
+	# Calculate graph-space coordinates: (Mouse / Zoom) + Scroll
+	_pending_node_creation_pos = (local_mouse / zoom) + scroll
+	
+	_pending_connection_data = connect_from_data
+	
+	# Display popup menu at mouse screen coordinates
+	_add_node_menu.popup(Rect2i(get_viewport().get_mouse_position(), Vector2.ZERO))
+
+
+func _on_node_selected_from_menu(type_name: String) -> void:
+	# Use call_deferred to ensure the menu is closed and the editor state is stable
+	# before proceeding with the complex node creation logic.
+	call_deferred("_create_new_node", type_name)
+
+
+func _create_new_node(type_name: String) -> void:
+	var editable_graph = _data_manager.make_active_graph_editable()
+	if not is_instance_valid(editable_graph):
+		return
+
+	var node_script = _node_registry.get_script_for_name(type_name)
+	if not is_instance_valid(node_script):
+		return
+		
+	var new_node_data: GraphNodeResource = node_script.new()
+	
+	# Generate a unique ID for the new node based on its type and current timestamp.
+	new_node_data.id = "%s_%d_%d" % [type_name.to_snake_case(), Time.get_unix_time_from_system(), randi() & 0xFFFF]
+	new_node_data.graph_position = _pending_node_creation_pos
+	
+	# Create and execute the command to add the node to the graph.
+	var command = QWActionHandler.CreateNodeCommand.new(_editor, editable_graph, node_script, _pending_node_creation_pos, _pending_connection_data)
+	_history.execute_command(command)
+	
+	# Clean up the state after the command has been created.
+	_pending_connection_data.clear()
+	
+	# Disable the connecting line visual aid in the graph controller.
+	_graph_controller.set_is_connecting(false)
+	
+	await get_tree().process_frame
+	
+	# Instruct the editor to select and inspect the newly created node.
+	_editor.select_and_inspect_node(new_node_data.id)

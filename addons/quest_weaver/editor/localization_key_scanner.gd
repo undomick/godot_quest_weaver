@@ -1,3 +1,4 @@
+# res://addons/quest_weaver/editor/localization_key_scanner.gd
 @tool
 class_name LocalizationKeyScanner
 extends RefCounted

@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3 uid="uid://cgrbd1g8idtfj"]
+
+[ext_resource type="Script" uid="uid://bb3yfir305k48" path="res://addons/quest_weaver/nodes/flow/event_listener_node/event_listener_node_editor.gd" id="1_qp6v3"]
+
+[node name="EventListenerNodeEditor" type="VBoxContainer"]
+script = ExtResource("1_qp6v3")
+
+[node name="KeepListeningCheckbox" type="CheckBox" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Keep Listening (Loop)"
+
+[node name="HSeparator" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="SimpleModeCheckBox" type="CheckBox" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Use Simple Conditions"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Event Name: "
+
+[node name="EventNameEdit" type="LineEdit" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ConditionContainer" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="AddSimpleConditionButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+text = "+ Add Condition"
+
+[node name="SimpleConditionsContainer" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2

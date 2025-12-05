@@ -1,0 +1,52 @@
+[gd_scene load_steps=3 format=3 uid="uid://41qktips0nb3"]
+
+[ext_resource type="Script" uid="uid://csvs5o3wnr0pr" path="res://addons/quest_weaver/nodes/action/give_take_item_node/give_take_item_node_editor.gd" id="1_cgtjc"]
+[ext_resource type="PackedScene" uid="uid://bulr50esg11es" path="res://addons/quest_weaver/editor/components/auto_complete_line_edit.tscn" id="2_xuvid"]
+
+[node name="GiveTakeItemNodeEditor" type="VBoxContainer"]
+custom_minimum_size = Vector2(200, 150)
+offset_right = 40.0
+offset_bottom = 40.0
+size_flags_horizontal = 3
+script = ExtResource("1_cgtjc")
+
+[node name="ActionContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="ActionLabel" type="Label" parent="ActionContainer"]
+layout_mode = 2
+text = "Action: "
+
+[node name="ActionPicker" type="OptionButton" parent="ActionContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="AmountContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="AmountLabel" type="Label" parent="AmountContainer"]
+layout_mode = 2
+text = "Amount: "
+
+[node name="AmountSpinBox" type="SpinBox" parent="AmountContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ItemContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ItemContainer"]
+layout_mode = 2
+
+[node name="ItemLabel" type="Label" parent="ItemContainer/VBoxContainer"]
+layout_mode = 2
+text = "Item ID: "
+
+[node name="Spacer" type="Control" parent="ItemContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemIDEdit" parent="ItemContainer" instance=ExtResource("2_xuvid")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3

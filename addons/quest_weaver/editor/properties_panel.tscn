@@ -1,0 +1,56 @@
+[gd_scene load_steps=3 format=3 uid="uid://jmguya1cwte8"]
+
+[ext_resource type="Script" uid="uid://bi6gxv1l3bdbe" path="res://addons/quest_weaver/editor/properties_panel.gd" id="1_yqbrr"]
+[ext_resource type="Theme" uid="uid://ccxtg65xjhu81" path="res://addons/quest_weaver/assets/themes/quest_weaver_theme.tres" id="2_f45u1"]
+
+[node name="PropertiesPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(300, 0)
+offset_right = 350.0
+offset_bottom = 350.0
+size_flags_horizontal = 3
+script = ExtResource("1_yqbrr")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="ContentContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="NoSelectionLabel" type="Label" parent="MarginContainer/ContentContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Select a node to edit properties."
+horizontal_alignment = 1
+
+[node name="NodeTypeLabel" type="Label" parent="MarginContainer/ContentContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme = ExtResource("2_f45u1")
+theme_type_variation = &"HeaderMedium"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/ContentContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/ContentContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/ContentContainer/ScrollContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="PropertyFieldsContainer" type="VBoxContainer" parent="MarginContainer/ContentContainer/ScrollContainer/MarginContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3

@@ -1,0 +1,39 @@
+# res://addons/quest_weaver/nodes/logic/end_scope_node/end_scope_node_resource.gd
+@tool
+class_name EndScopeNodeResource
+extends GraphNodeResource
+
+## Must match the ID of a StartScopeNode within the same graph.
+@export var scope_id: String = "my_scope_1"
+
+func _init():
+	category = "Logic"
+	input_ports = ["In"]
+	# The "Scope Completed" output triggers only when this node is reached.
+	# It signals the successful completion of a scope iteration.
+	output_ports = ["Scope Completed"]
+
+func get_editor_summary() -> String:
+	var id_text = scope_id if not scope_id.is_empty() else "???"
+	return "End Scope:\n'%s'" % id_text
+
+func get_description() -> String:
+	return "Marks the boundary of a Scope. Used to define what should be reset."
+
+func get_icon() -> Texture2D:
+	return preload("res://addons/quest_weaver/assets/icons/end_scope.svg")
+
+func execute(_controller):
+	pass
+
+func to_dictionary() -> Dictionary:
+	var data = super.to_dictionary()
+	data["scope_id"] = self.scope_id
+	return data
+
+func from_dictionary(data: Dictionary):
+	super.from_dictionary(data)
+	self.scope_id = data.get("scope_id", "my_scope_1")
+
+func determine_default_size() -> QWNodeSizes.Size:
+	return QWNodeSizes.Size.SMALL

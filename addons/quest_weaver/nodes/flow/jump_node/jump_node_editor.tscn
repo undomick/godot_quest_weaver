@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://o6ehsaqic4vv"]
+
+[ext_resource type="Script" uid="uid://nfpnmk5lc86t" path="res://addons/quest_weaver/nodes/flow/jump_node/jump_node_editor.gd" id="1_5acln"]
+
+[node name="JumpNodeEditor" type="VBoxContainer"]
+script = ExtResource("1_5acln")
+
+[node name="TargetNameEdit" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 2

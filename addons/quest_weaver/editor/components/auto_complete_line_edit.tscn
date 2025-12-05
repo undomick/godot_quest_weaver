@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=3 uid="uid://bulr50esg11es"]
+
+[ext_resource type="Script" uid="uid://buhaxwoyo0ce3" path="res://addons/quest_weaver/editor/components/auto_complete_line_edit.gd" id="1_hr1ni"]
+
+[node name="AutoCompleteLineEdit" type="VBoxContainer"]
+custom_minimum_size = Vector2(200, 20)
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_hr1ni")
+
+[node name="FilterEdit" type="LineEdit" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 2
+placeholder_text = "AutoCompleted Text"
+
+[node name="PopupContainer" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+z_index = 10
+layout_mode = 2
+mouse_filter = 1
+
+[node name="ResultList" type="ItemList" parent="PopupContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+auto_width = true
+auto_height = true

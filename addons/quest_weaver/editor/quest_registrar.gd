@@ -65,8 +65,10 @@ static func update_registry_from_project(registry: QuestRegistry, scan_folder: S
 		if not registry.resource_path.is_empty():
 			var save_error = ResourceSaver.save(registry, registry.resource_path)
 			if save_error == OK:
-				print("[QuestRegistrar] Quest Registry updated. Found %d unique quest IDs." % found_ids.size())
+				# print("[QuestRegistrar] Quest Registry updated. Found %d unique quest IDs." % found_ids.size())
+				pass
 			else:
 				push_error("QuestRegistrar: Failed to save the Quest Registry! Error: %s" % error_string(save_error))
 	else:
-		print("[QuestRegistrar] Quest Registry is already up-to-date. %d IDs loaded." % found_ids.size())
+		# print("[QuestRegistrar] Quest Registry is already up-to-date. %d IDs loaded." % found_ids.size())
+		pass

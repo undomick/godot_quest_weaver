@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=3 uid="uid://cbxmdchmhqt23"]
+
+[ext_resource type="Script" uid="uid://cnhmqypta56ir" path="res://addons/quest_weaver/editor/node_selection_menu.gd" id="1_t1y6b"]
+
+[node name="NodeSelectionMenu" type="PopupPanel"]
+oversampling_override = 1.0
+size = Vector2i(228, 403)
+visible = true
+unresizable = false
+content_scale_size = Vector2i(250, 300)
+script = ExtResource("1_t1y6b")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 224.0
+offset_bottom = 399.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="FilterEdit" type="LineEdit" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Search Node..."
+
+[node name="NodeList" type="ItemList" parent="VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 360)
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 0

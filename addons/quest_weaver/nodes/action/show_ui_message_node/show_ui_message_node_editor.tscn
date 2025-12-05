@@ -1,0 +1,252 @@
+[gd_scene load_steps=2 format=3 uid="uid://efkk82glwqs2"]
+
+[ext_resource type="Script" uid="uid://vob25o2mphqc" path="res://addons/quest_weaver/nodes/action/show_ui_message_node/show_ui_message_node_editor.gd" id="1_at24h"]
+
+[node name="ShowUIMessageNodeEditor" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_at24h")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Message Type: "
+
+[node name="MessageTypeEdit" type="OptionButton" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "AreaName"
+popup/item_0/id = 0
+popup/item_1/text = "Default"
+popup/item_1/id = 1
+popup/item_2/text = "Instruction"
+popup/item_2/id = 2
+
+[node name="WaitForCompletionCheckbox" type="CheckBox" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Wait For Completion"
+
+[node name="HSeparator" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="TabContainer" type="TabContainer" parent="."]
+layout_mode = 2
+current_tab = 0
+
+[node name="In Animation" type="VBoxContainer" parent="TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="InAnimContainer" type="HBoxContainer" parent="TabContainer/In Animation"]
+layout_mode = 2
+
+[node name="Label3" type="Label" parent="TabContainer/In Animation/InAnimContainer"]
+layout_mode = 2
+text = "Anim In: "
+
+[node name="AnimationInPicker" type="OptionButton" parent="TabContainer/In Animation/InAnimContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 7
+popup/item_0/text = "NONE"
+popup/item_0/id = 0
+popup/item_1/text = "FADE"
+popup/item_1/id = 1
+popup/item_2/text = "SLIDE_UP"
+popup/item_2/id = 2
+popup/item_3/text = "SLIDE_DOWN"
+popup/item_3/id = 3
+popup/item_4/text = "SCALE_UP"
+popup/item_4/id = 4
+popup/item_5/text = "SCALE_DOWN"
+popup/item_5/id = 5
+popup/item_6/text = "SLIDE_ROTATED"
+popup/item_6/id = 6
+
+[node name="EaseInPicker" type="OptionButton" parent="TabContainer/In Animation/InAnimContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 4
+popup/item_0/text = "In"
+popup/item_0/id = 0
+popup/item_1/text = "Out"
+popup/item_1/id = 1
+popup/item_2/text = "In Out"
+popup/item_2/id = 2
+popup/item_3/text = "Out In"
+popup/item_3/id = 3
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="TabContainer/In Animation"]
+layout_mode = 2
+
+[node name="PerCharacterInCheckbox" type="CheckBox" parent="TabContainer/In Animation/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Per Char"
+
+[node name="DurationInContainer" type="HBoxContainer" parent="TabContainer/In Animation/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="TabContainer/In Animation/HBoxContainer2/DurationInContainer"]
+layout_mode = 2
+text = "Duration"
+
+[node name="DurationInSpinBox" type="SpinBox" parent="TabContainer/In Animation/HBoxContainer2/DurationInContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+step = 0.05
+
+[node name="Out Animation" type="VBoxContainer" parent="TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="OutAnimContainer" type="HBoxContainer" parent="TabContainer/Out Animation"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label4" type="Label" parent="TabContainer/Out Animation/OutAnimContainer"]
+layout_mode = 2
+text = "Anim Out:  "
+
+[node name="AnimationOutPicker" type="OptionButton" parent="TabContainer/Out Animation/OutAnimContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 7
+popup/item_0/text = "NONE"
+popup/item_0/id = 0
+popup/item_1/text = "FADE"
+popup/item_1/id = 1
+popup/item_2/text = "SLIDE_UP"
+popup/item_2/id = 2
+popup/item_3/text = "SLIDE_DOWN"
+popup/item_3/id = 3
+popup/item_4/text = "SCALE_UP"
+popup/item_4/id = 4
+popup/item_5/text = "SCALE_DOWN"
+popup/item_5/id = 5
+popup/item_6/text = "SLIDE_ROTATED"
+popup/item_6/id = 6
+
+[node name="EaseOutPicker" type="OptionButton" parent="TabContainer/Out Animation/OutAnimContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 4
+popup/item_0/text = "In"
+popup/item_0/id = 0
+popup/item_1/text = "Out"
+popup/item_1/id = 1
+popup/item_2/text = "In Out"
+popup/item_2/id = 2
+popup/item_3/text = "Out In"
+popup/item_3/id = 3
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="TabContainer/Out Animation"]
+layout_mode = 2
+
+[node name="PerCharacterOutCheckbox" type="CheckBox" parent="TabContainer/Out Animation/HBoxContainer3"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Per Char"
+
+[node name="DurationOutContainer" type="HBoxContainer" parent="TabContainer/Out Animation/HBoxContainer3"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" type="Label" parent="TabContainer/Out Animation/HBoxContainer3/DurationOutContainer"]
+layout_mode = 2
+text = "Duration"
+
+[node name="DurationOutSpinBox" type="SpinBox" parent="TabContainer/Out Animation/HBoxContainer3/DurationOutContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+step = 0.05
+
+[node name="HSeparator2" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="HBoxContainer7" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="DelayTitleMessageContainer" type="HBoxContainer" parent="HBoxContainer7"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBoxContainer7/DelayTitleMessageContainer"]
+layout_mode = 2
+text = "Delay Title to Message (s)"
+
+[node name="DelayTitleMessageSpinBox" type="SpinBox" parent="HBoxContainer7/DelayTitleMessageContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+step = 0.05
+
+[node name="DelayInOutContainer" type="HBoxContainer" parent="HBoxContainer7"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer7/DelayInOutContainer"]
+layout_mode = 2
+text = "Hold Duration (s)"
+
+[node name="HoldDurationSpinBox" type="SpinBox" parent="HBoxContainer7/DelayInOutContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+step = 0.05
+
+[node name="CharacterStaggerContainer" type="HBoxContainer" parent="HBoxContainer7"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer7/CharacterStaggerContainer"]
+layout_mode = 2
+text = "Char stagger (ms)"
+
+[node name="CharacterStaggerSpinBox" type="SpinBox" parent="HBoxContainer7/CharacterStaggerContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="HSeparator3" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="TitleContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="TitleContainer"]
+layout_mode = 2
+text = "Title Override: "
+
+[node name="TitleOverrideEdit" type="LineEdit" parent="TitleContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MessageContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="MessageContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Message Override: "
+
+[node name="MessageOverrideEdit" type="TextEdit" parent="MessageContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+wrap_mode = 1
+scroll_fit_content_height = true
+scroll_fit_content_width = true

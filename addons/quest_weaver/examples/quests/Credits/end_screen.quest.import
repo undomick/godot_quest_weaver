@@ -1,0 +1,14 @@
+[remap]
+
+importer="quest_weaver.importer"
+type="Resource"
+uid="uid://jee1l5kngbp5"
+path="res://.godot/imported/end_screen.quest-510381b2f4844b8bef657051376f8ddc.tres"
+
+[deps]
+
+source_file="res://addons/quest_weaver/examples/quests/Credits/end_screen.quest"
+dest_files=["res://.godot/imported/end_screen.quest-510381b2f4844b8bef657051376f8ddc.tres"]
+
+[params]
+

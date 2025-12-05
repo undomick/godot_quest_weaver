@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="Timer">
+        <g transform="matrix(1,0,0,1,-0.774251,0.507936)">
+            <rect x="13" y="7" width="2" height="1" style="fill:white;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,-11.1552,0.507936)">
+            <rect x="13" y="7" width="2" height="1" style="fill:white;"/>
+        </g>
+        <g transform="matrix(6.12323e-17,1,-1,6.12323e-17,15.5,-0.866843)">
+            <rect x="13" y="7" width="2" height="1" style="fill:white;"/>
+        </g>
+        <g transform="matrix(6.12323e-17,1,-1,6.12323e-17,15.5,-11.0644)">
+            <rect x="13" y="7" width="2" height="1" style="fill:white;"/>
+        </g>
+        <g transform="matrix(0.875,0,0,0.875,1,1)">
+            <path d="M14.866,3.894C15.586,5.094 16,6.499 16,8C16,12.415 12.415,16 8,16C3.585,16 0,12.415 0,8C0,3.585 3.585,0 8,0C9.501,0 10.906,0.414 12.106,1.134L11.269,1.972C10.297,1.443 9.183,1.143 8,1.143C4.215,1.143 1.143,4.215 1.143,8C1.143,11.785 4.215,14.857 8,14.857C11.785,14.857 14.857,11.785 14.857,8C14.857,6.817 14.557,5.703 14.028,4.731L14.866,3.894Z" style="fill:white;"/>
+        </g>
+        <g transform="matrix(0.707107,0.707107,-0.707107,0.707107,8.02513,-3.13173)">
+            <rect x="7" y="0" width="1" height="8" style="fill:white;"/>
+        </g>
+    </g>
+</svg>

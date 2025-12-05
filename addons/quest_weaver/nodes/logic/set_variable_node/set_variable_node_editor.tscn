@@ -1,0 +1,48 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcxfmkhrqik6d"]
+
+[ext_resource type="Script" uid="uid://kamvpwgmm46i" path="res://addons/quest_weaver/nodes/logic/set_variable_node/set_variable_node_editor.gd" id="1_qppw5"]
+
+[node name="SetVariableNodeEditor" type="VBoxContainer"]
+custom_minimum_size = Vector2(100, 100)
+offset_right = 40.0
+offset_bottom = 40.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_qppw5")
+
+[node name="NameContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="VariableLabel" type="Label" parent="NameContainer"]
+layout_mode = 2
+text = "Variable Name"
+
+[node name="VariableNameEdit" type="LineEdit" parent="NameContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ValueContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="ValueLabel" type="Label" parent="ValueContainer"]
+layout_mode = 2
+text = "Value to Set"
+
+[node name="ValueToSetEdit" type="LineEdit" parent="ValueContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "string, 123, 4.56, true"
+
+[node name="OperatorContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="OperatorLabel" type="Label" parent="OperatorContainer"]
+layout_mode = 2
+text = "Operator"
+
+[node name="OperatorPicker" type="OptionButton" parent="OperatorContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3

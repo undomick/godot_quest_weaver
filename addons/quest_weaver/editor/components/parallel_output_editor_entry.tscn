@@ -1,0 +1,37 @@
+[gd_scene load_steps=3 format=3 uid="uid://brnfrybqtkbft"]
+
+[ext_resource type="PackedScene" uid="uid://d3tc1f1gyjxcd" path="res://addons/quest_weaver/editor/conditions/condition_editor.tscn" id="1_b0xhf"]
+[ext_resource type="Script" uid="uid://do2wp4ayk0bry" path="res://addons/quest_weaver/editor/components/parallel_output_editor_entry.gd" id="1_dwg6e"]
+
+[node name="ParallelOutputEditorEntry" type="VBoxContainer"]
+script = ExtResource("1_dwg6e")
+
+[node name="HSeparator" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="HSplitContainer" type="HSplitContainer" parent="."]
+layout_mode = 2
+
+[node name="RemoveButton" type="Button" parent="HSplitContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "X"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="HSplitContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HSplitContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Port Name: "
+
+[node name="PortNameEdit" type="LineEdit" parent="HSplitContainer/VBoxContainer/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ConditionEditor" parent="HSplitContainer/VBoxContainer" instance=ExtResource("1_b0xhf")]
+unique_name_in_owner = true
+layout_mode = 2

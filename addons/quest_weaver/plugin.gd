@@ -15,25 +15,28 @@ func _enable_plugin() -> void:
 	var base_path = get_plugin_path()
 	var global_path = base_path + "/core/quest_weaver_global.gd"
 	var services_path = base_path + "/core/quest_weaver_services.gd"
+	var gamestate_path = base_path + "/core/quest_weaver_game_state.gd"
 	
 	add_autoload_singleton("QuestWeaverGlobal", global_path)
 	add_autoload_singleton("QuestWeaverServices", services_path)
+	add_autoload_singleton("QuestWeaverGameState", gamestate_path)
 	_load_editor_data()
 
 func _disable_plugin() -> void:
+	remove_autoload_singleton("QuestWeaverGameState")
 	remove_autoload_singleton("QuestWeaverGlobal")
 	remove_autoload_singleton("QuestWeaverServices")
 
 func _enter_tree() -> void:
-	import_plugin = QWConstants.ImportPluginScript.new()
-	export_plugin = QWConstants.ExportPluginScript.new()
+	import_plugin = QuestWeaverImportPlugin.new()
+	export_plugin = QuestWeaverExportPlugin.new()
 	saver = QWFormat.QuestGraphFormatSaver.new()
 	add_import_plugin(import_plugin)
 	add_export_plugin(export_plugin)
 	ResourceSaver.add_resource_format_saver(saver)
 
 	var icon = load(QWConstants.ICON_PATH)
-	add_custom_type(QWConstants.RESOURCE_TYPE_NAME, "Resource", QWConstants.QuestGraphResourceScript, icon)
+	add_custom_type(QWConstants.RESOURCE_TYPE_NAME, "Resource", QuestGraphResource, icon)
 	
 	var base_control = EditorInterface.get_base_control()
 	validator_dock = base_control.find_child(QWConstants.VALIDATOR_DOCK_NAME, true, false)
@@ -43,7 +46,7 @@ func _enter_tree() -> void:
 		validator_dock.name = QWConstants.VALIDATOR_DOCK_NAME
 		add_control_to_bottom_panel(validator_dock, "Quest Validator")
 
-	debugger_node = QWConstants.QuestWeaverDebuggerNode.new()
+	debugger_node = QuestWeaverDebugger.new()
 	debugger_node.name = "QuestWeaverDebuggerHost"
 	add_child(debugger_node)
 	add_debugger_plugin(debugger_node.get_plugin_instance())
@@ -124,7 +127,7 @@ func _make_visible(visible: bool):
 		# Get the EditorInterface instance
 		var editor_interface = get_editor_interface()
 		
-		# FIX: Pass the editor_interface instance to the initialize function
+		# Pass the editor_interface instance to the initialize function
 		main_view.call_deferred("initialize", self, editor_data, editor_interface)
 		
 		if editor_interface:
@@ -212,7 +215,7 @@ func _get_plugin_name() -> String:
 	return "QuestWeaver"
 
 func _get_plugin_icon() -> Texture2D:
-	return load(get_plugin_path() + "/assets/icon.svg")
+	return load(get_plugin_path() + "/assets/icons/icon.svg")
 
 func get_version() -> String:
 	var config: ConfigFile = ConfigFile.new()

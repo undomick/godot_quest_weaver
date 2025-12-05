@@ -1,4 +1,4 @@
-# res://addons/quest_weaver/examples/simple_inventory/simple_inventory_controller.gd
+# res://addons/quest_weaver/examples/scenes/simple_inventory_controller.gd
 extends Node
 
 # Signal that the adapter will listen to.
@@ -30,15 +30,12 @@ func check_item(item_id: String, amount: int) -> bool:
 func give_item(item_id: String, amount: int) -> void:
 	var current_amount = count_item(item_id)
 	_inventory[item_id] = current_amount + amount
-	print("[SimpleInventoryController] Gave %d x '%s'. New total: %d" % [amount, item_id, _inventory[item_id]])
 	inventory_changed.emit()
 
 func take_item(item_id: String, amount: int) -> bool:
 	if not check_item(item_id, amount):
-		print("[SimpleInventoryController] FAILED to take %d x '%s'. Not enough items." % [amount, item_id])
 		return false
 	
 	_inventory[item_id] -= amount
-	print("[SimpleInventoryController] Took %d x '%s'. New total: %d" % [amount, item_id, _inventory[item_id]])
 	inventory_changed.emit()
 	return true
