@@ -6,14 +6,22 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 	var msg_node = node as ShowUIMessageNodeResource
 	if not is_instance_valid(msg_node): return
 
-	var presentation_manager = QuestWeaverServices.presentation_manager
+	# FIX: Safe Dynamic Lookup for PresentationManager
+	# We avoid accessing QuestWeaverServices statically to prevent import errors on fresh installs.
+	var main_loop = Engine.get_main_loop()
+	var presentation_manager = null
+	if main_loop and main_loop.root:
+		var services = main_loop.root.get_node_or_null("QuestWeaverServices")
+		if is_instance_valid(services):
+			presentation_manager = services.presentation_manager
+
 	if not is_instance_valid(presentation_manager):
-		push_error("ShowUIMessageNodeExecutor: PresentationManager not found!")
+		push_warning("ShowUIMessageNodeExecutor: PresentationManager not found via Services.")
 		context.quest_controller.complete_node(msg_node)
 		return
 
 	var presentation_data = {
-		"_node_id": msg_node.id, # <--- Pass the Node ID as a token
+		"_node_id": msg_node.id, # Pass the Node ID as a token
 		
 		"type": msg_node.message_type,
 		"title": msg_node.title_override,
@@ -42,7 +50,7 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 	else:
 		context.quest_controller.complete_node(msg_node)
 
-func _wait_and_complete(p_manager: PresentationManager, p_context: ExecutionContext, p_node: ShowUIMessageNodeResource) -> void:
+func _wait_and_complete(p_manager: Node, p_context: ExecutionContext, p_node: ShowUIMessageNodeResource) -> void:
 	# Loop until WE are the ones who finished.
 	# This ignores signals from other messages that might finish before us or during our wait.
 	while true:

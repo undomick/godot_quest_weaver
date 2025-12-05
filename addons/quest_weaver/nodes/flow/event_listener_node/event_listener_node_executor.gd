@@ -10,7 +10,13 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 		return
 
 	var controller = context.quest_controller
-	var logger = QuestWeaverServices.logger
+	var logger = null
+	var main_loop = Engine.get_main_loop()
+	if main_loop and main_loop.root:
+		var services = main_loop.root.get_node_or_null("QuestWeaverServices")
+		if is_instance_valid(services):
+			logger = services.logger
+	
 	if not is_instance_valid(logger): return
 	
 	var activated_on_port = 0

@@ -46,11 +46,14 @@ func _ready() -> void:
 	visibility_changed.connect(_on_visibility_changed)
 	
 	# Try to connect to the controller immediately, or wait for it
-	quest_controller = QuestWeaverServices.quest_controller
-	if is_instance_valid(quest_controller):
-		_initialize_connections()
-	else:
-		QuestWeaverServices.controller_ready.connect(_on_controller_ready, CONNECT_ONE_SHOT)
+	var services = _get_services_safe()
+	if services:
+		quest_controller = services.quest_controller
+		if is_instance_valid(quest_controller):
+			_initialize_connections()
+		else:
+			# Warten, bis Controller bereit ist
+			services.controller_ready.connect(_on_controller_ready, CONNECT_ONE_SHOT)
 
 func _on_visibility_changed() -> void:
 	# Refresh data only when the UI becomes visible to save performance
@@ -69,7 +72,9 @@ func _initialize_connections() -> void:
 		_request_list_redraw()
 
 func _on_controller_ready() -> void:
-	quest_controller = QuestWeaverServices.quest_controller
+	var services = _get_services_safe()
+	if services:
+		quest_controller = services.quest_controller
 	if is_instance_valid(quest_controller):
 		_initialize_connections()
 	else:
@@ -247,6 +252,11 @@ func _update_detail_view() -> void:
 			obj_label.text = display_text
 			detail_objectives_list.add_child(obj_label)
 
+func _get_services_safe() -> Node:
+	var main_loop = Engine.get_main_loop()
+	if main_loop and main_loop.root:
+		return main_loop.root.get_node_or_null("QuestWeaverServices")
+	return null
 
 func _on_close_button_pressed() -> void:
 	self.visible = false

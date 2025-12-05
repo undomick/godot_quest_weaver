@@ -46,7 +46,14 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 func _wait_for_animation_and_complete(anim_player: AnimationPlayer, node_instance: PlayCutsceneNodeResource, controller: QuestController):
 	await anim_player.animation_finished
 	
-	var logger = QuestWeaverServices.logger
+	# Safe logger lookup to avoid static dependency issues on first load
+	var logger = null
+	var main_loop = Engine.get_main_loop()
+	if main_loop and main_loop.root:
+		var services = main_loop.root.get_node_or_null("QuestWeaverServices")
+		if is_instance_valid(services):
+			logger = services.logger
+	
 	if is_instance_valid(logger):
 		logger.log("Executor", "  - PlayCutsceneNode '%s' finished waiting." % node_instance.id)
 	

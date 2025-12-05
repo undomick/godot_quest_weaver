@@ -2,12 +2,13 @@
 extends Node
 
 # This scene demonstrates how to interact with the QuestWeaver system from your game.
-# The correct way is to use the global signals provided by QuestWeaverGlobal.
-# This keeps your game code decoupled from the internal quest logic.
+# It uses a safe access pattern to avoid errors if the plugin is not yet enabled.
+# The correct way is to use the global signals provided by QuestWeaverGlobal once the addon is enabled.
 
 # Adventure related stuff
 @onready var quest_log_ui: QuestLogUI = %QuestLogUI
 @onready var journal_button: Button = %JournalButton
+
 # Old Man Nestor
 @onready var mq_vbox_container: VBoxContainer = %MQ_VBoxContainer
 @onready var old_man_talk_button: Button = %OldManTalkButton
@@ -42,8 +43,12 @@ func _ready() -> void:
 	lady_talk_button.pressed.connect(_on_lady_talked)
 	lady_kill_button.pressed.connect(_on_kill_lydia)
 	
-	# listen to the global quest weaver events
-	QuestWeaverGlobal.quest_event_fired.connect(_on_quest_event)
+	# Listen to the global quest weaver events.
+	# We use a safe lookup here to prevent errors during plugin installation.
+	# In your own game, you can simply write: QuestWeaverGlobal.quest_event_fired.connect(...)
+	var qw_global = _get_global_bus()
+	if qw_global:
+		qw_global.quest_event_fired.connect(_on_quest_event)
 
 func _on_quest_event(event_name: String, _payload: Dictionary) -> void:
 	if event_name == "enable_collect_ui":
@@ -59,33 +64,37 @@ func _on_quest_event(event_name: String, _payload: Dictionary) -> void:
 
 func _on_old_man_talked() -> void:
 	print("Demo: Interact with Old Man...")
-	QuestWeaverGlobal.quest_event_fired.emit("interact_old_man", {})
+	var qw_global = _get_global_bus()
+	if qw_global:
+		qw_global.quest_event_fired.emit("interact_old_man", {})
 
 func _on_lady_talked() -> void:
-	print("Demo: Interact with Young Lady...")
-	QuestWeaverGlobal.quest_event_fired.emit("interact_lady", {})
+	print("Demo: Interact with Lady...")
+	var qw_global = _get_global_bus()
+	if qw_global:
+		qw_global.quest_event_fired.emit("interact_lady", {})
 
 func _on_kill_nestor() -> void:
 	print("Demo: Nestor was killed!")
 	
-	# A. Das Signal an QuestWeaver senden
-	# "nestor" ist die ID, die du später im Quest-Graphen einträgst.
-	QuestWeaverGlobal.enemy_was_killed.emit("nestor")
+	var qw_global = _get_global_bus()
+	if qw_global:
+		qw_global.enemy_was_killed.emit("nestor")
 	
 	old_man_talk_button.disabled = true
 	old_man_kill_button.disabled = true
 	lady_kill_button.disabled = true
 	lady_spare_button.disabled = true
 	
-	# B. Visuelles Feedback (Nestor verschwindet)
-	# Wir verstecken einfach seinen Container.
 	if mq_vbox_container:
 		mq_vbox_container.modulate = Color(0.0, 0.0, 0.0, 0.25)
 
 func _on_kill_lydia() -> void:
 	print("Demo: Lydia was killed")
 	
-	QuestWeaverGlobal.enemy_was_killed.emit("lydia")
+	var qw_global = _get_global_bus()
+	if qw_global:
+		qw_global.enemy_was_killed.emit("lydia")
 	
 	old_man_kill_button.disabled = true
 	lady_kill_button.disabled = true
@@ -98,7 +107,8 @@ func _on_kill_lydia() -> void:
 func _on_collect_item(item_id: String, amount: int) -> void:
 	print("Demo: Player collect %d x %s" % [amount, item_id])
 	
-	inventory_controller.give_item(item_id, amount)
+	if is_instance_valid(inventory_controller):
+		inventory_controller.give_item(item_id, amount)
 
 func _on_journal_button_pressed() -> void:
 	quest_log_ui.visible = true
@@ -114,3 +124,7 @@ func _on_collect_button_3_pressed() -> void:
 
 func _on_collect_button_4_pressed() -> void:
 	_on_collect_item("meat", 1)
+
+# Helper to get the singleton safely without breaking compilation on first import
+func _get_global_bus() -> Node:
+	return get_tree().root.get_node_or_null("QuestWeaverGlobal")
