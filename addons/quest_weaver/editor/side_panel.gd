@@ -163,7 +163,7 @@ func _on_donate_button_pressed() -> void:
 	OS.shell_open("https://ko-fi.com/jundrie")
 
 func _on_docs_button_pressed() -> void:
-	OS.shell_open("https://github.com/undomick/godot_quest_weaver")
+	OS.shell_open("https://github.com/undomick/godot_nexus_quest_weaver/wiki")
 
 func _on_list_item_clicked(index: int, _at_pos: Vector2, mouse_btn: int) -> void:
 	if mouse_btn == MOUSE_BUTTON_RIGHT:

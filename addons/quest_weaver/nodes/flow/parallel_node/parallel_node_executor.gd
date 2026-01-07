@@ -6,15 +6,9 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 	var parallel_node = node as ParallelNodeResource
 	if not is_instance_valid(parallel_node): return
 	
-	# Safe logger lookup to avoid static dependency issues on first load
-	var logger = null
-	var main_loop = Engine.get_main_loop()
-	if main_loop and main_loop.root:
-		var services = main_loop.root.get_node_or_null("QuestWeaverServices")
-		if is_instance_valid(services):
-			logger = services.logger
+	var logger = context.logger
 
-	if logger:
+	if is_instance_valid(logger):
 		logger.log("Flow", "Executing ParallelNode '%s': Evaluating %d branches." % [parallel_node.id, parallel_node.outputs.size()])
 	
 	parallel_node.status = GraphNodeResource.Status.COMPLETED

@@ -180,21 +180,21 @@ func to_dictionary() -> Dictionary:
 	}
 
 func from_dictionary(data: Dictionary):
-	self.type = data.get("type", ConditionType.BOOL)
+	self.type = _defensive_load(data, "type", ConditionType.keys(), ConditionType.BOOL)
 	self.is_true = data.get("is_true", true)
 	self.chance_percentage = data.get("chance_percentage", 50.0)
 	self.item_id = data.get("item_id", "")
 	self.amount = data.get("amount", 1)
 	self.quest_id = data.get("quest_id", "")
-	self.expected_status = data.get("expected_status", QWEnums.QuestState.COMPLETED)
+	self.expected_status = _defensive_load(data, "expected_status", QWEnums.QuestState.keys(), QWEnums.QuestState.COMPLETED)
 	self.variable_name = data.get("variable_name", "")
 	self.expected_value_string = data.get("expected_value_string", "")
-	self.operator = data.get("operator", Operator.EQUALS)
-	self.check_type = data.get("check_type", CheckType.RECEIVED_N_INPUTS)
+	self.operator = _defensive_load(data, "operator", Operator.keys(), Operator.EQUALS)
+	self.check_type = _defensive_load(data, "check_type", CheckType.keys(), CheckType.RECEIVED_N_INPUTS)
 	self.sync_value = data.get("sync_value", 1)
 	self.objective_id = data.get("objective_id", "")
-	self.expected_objective_status = data.get("expected_objective_status", ObjectiveResource.Status.COMPLETED)
-	self.logic_operator = data.get("logic_operator", LogicOperator.AND)
+	self.expected_objective_status = _defensive_load(data, "expected_objective_status", ObjectiveResource.Status.keys(), ObjectiveResource.Status.COMPLETED)
+	self.logic_operator = _defensive_load(data, "logic_operator", LogicOperator.keys(), LogicOperator.AND)
 	
 	self.sub_conditions.clear()
 	var sub_conditions_data = data.get("sub_conditions", [])
@@ -204,3 +204,9 @@ func from_dictionary(data: Dictionary):
 			var new_sub_cond = load(script_path).new()
 			new_sub_cond.from_dictionary(sub_cond_dict)
 			self.sub_conditions.append(new_sub_cond)
+
+func _defensive_load(data: Dictionary, prop: String, keys: Array, default_val: int) -> int:
+	var val = data.get(prop, default_val)
+	if val is int and val >= 0 and val < keys.size():
+		return val
+	return default_val

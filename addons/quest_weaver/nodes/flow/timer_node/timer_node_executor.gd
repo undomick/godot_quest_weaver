@@ -5,22 +5,17 @@ extends NodeExecutor
 func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 	var timer_node = node as TimerNodeResource
 	if not is_instance_valid(timer_node): return
-
+	
 	var controller = context.quest_controller
-	var logger = null
-	var main_loop = Engine.get_main_loop()
-	if main_loop and main_loop.root:
-		var services = main_loop.root.get_node_or_null("QuestWeaverServices")
-		if is_instance_valid(services):
-			logger = services.logger
+	var logger = context.logger
 			
 	if not is_instance_valid(logger): return
-
+	
 	logger.log("Flow", "Executing TimerNode '%s': Starting %d second timer." % [timer_node.id, timer_node.duration])
 	timer_node.status = GraphNodeResource.Status.ACTIVE
 	
 	if controller.has_method("start_quest_timer"):
-		controller.start_quest_timer(timer_node)
+		controller._timer_manager.start_timer(timer_node)
 	else:
 		logger.warn("Flow", "TimerNode: QuestController hat keine Methode 'start_quest_timer'. Breche ab.")
 		controller.complete_node(timer_node)

@@ -71,7 +71,14 @@ func from_dictionary(data: Dictionary):
 	super.from_dictionary(data)
 	self.variable_name = data.get("variable_name", "")
 	self.value_to_set_string = data.get("value_to_set_string", "")
-	self.operator = data.get("operator", Operator.SET)
+	self.operator = _defensive_load(data, "operator", Operator.keys(), Operator.SET)
+
+## PRIVATE METHOD: Checks if an integer value is valid for the enum type.
+func _defensive_load(data: Dictionary, prop: String, keys: Array, default_val: int) -> int:
+	var val = data.get(prop, default_val)
+	if val is int and val >= 0 and val < keys.size():
+		return val
+	return default_val
 
 func determine_default_size() -> QWNodeSizes.Size:
 	return QWNodeSizes.Size.SMALL

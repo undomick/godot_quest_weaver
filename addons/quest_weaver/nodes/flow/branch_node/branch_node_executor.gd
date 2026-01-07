@@ -10,12 +10,7 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 
 	var result_is_true = branch_node.check_all_conditions(context)
 	
-	var logger = null
-	var main_loop = Engine.get_main_loop()
-	if main_loop and main_loop.root:
-		var services = main_loop.root.get_node_or_null("QuestWeaverServices")
-		if is_instance_valid(services):
-			logger = services.logger
+	var logger = context.logger
 	
 	if is_instance_valid(logger):
 		logger.log("Flow", "  <- Completing BranchNode: '%s' with result '%s'" % [branch_node.id, result_is_true])

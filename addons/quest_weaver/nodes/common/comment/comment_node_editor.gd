@@ -2,7 +2,7 @@
 @tool
 extends NodePropertyEditorBase
 
-@onready var text_edit: TextEdit = %TextEdit
+@onready var text_edit: TabFocusTextEdit = %TextEdit
 
 func _ready() -> void:
 	text_edit.focus_exited.connect(_on_text_confirmed)

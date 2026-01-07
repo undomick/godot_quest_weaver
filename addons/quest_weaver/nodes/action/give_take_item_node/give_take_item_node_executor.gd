@@ -9,31 +9,29 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 		context.quest_controller.complete_node(node)
 		return
 	
-	var logger = null
-	var main_loop = Engine.get_main_loop()
-	if main_loop and main_loop.root:
-		var services = main_loop.root.get_node_or_null("QuestWeaverServices")
-		if is_instance_valid(services):
-			logger = services.logger
+	var logger = context.logger
+	
 	if not is_instance_valid(logger):
-		print("CRITICAL: QWLogger not found in services.")
-		return
+		pass 
 	
 	var controller = context.quest_controller
 	var adapter = controller._inventory_adapter
 	
-	logger.log("Executor", "\n--- [GiveTakeItemNode] Executing node '%s' ---" % item_node.id)
+	if is_instance_valid(logger):
+		logger.log("Executor", "\n--- [GiveTakeItemNode] Executing node '%s' ---" % item_node.id)
 	
 	# Case 1: No inventory system available
 	if not is_instance_valid(adapter):
-		logger.warn("Inventory", "  - No inventory adapter configured. Activating 'Failure' path.")
+		if is_instance_valid(logger):
+			logger.warn("Inventory", "  - No inventory adapter configured. Activating 'Failure' path.")
 		controller._trigger_next_nodes_from_port(item_node, 1) # Port 1: Failure
 		controller._mark_node_as_complete(item_node)
 		return 
 	
 	# Case 2: Node is not configured correctly in the editor
 	if item_node.item_id.is_empty() or item_node.amount <= 0:
-		logger.warn("Inventory", "  - item_id is empty or amount is invalid. Activating 'Failure' path for safety.")
+		if is_instance_valid(logger):
+			logger.warn("Inventory", "  - item_id is empty or amount is invalid. Activating 'Failure' path for safety.")
 		# We choose Failure here because an unconfigured node should not result in success.
 		controller._trigger_next_nodes_from_port(item_node, 1) # Port 1: Failure
 		controller._mark_node_as_complete(item_node)
@@ -42,22 +40,27 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 	# Case 3: Core logic
 	match item_node.action:
 		item_node.Action.GIVE:
-			logger.log("Inventory", "  - Action: GIVE")
-			logger.log("Inventory", "  - Attempting to give %d x '%s'." % [item_node.amount, item_node.item_id])
+			if is_instance_valid(logger):
+				logger.log("Inventory", "  - Action: GIVE")
+				logger.log("Inventory", "  - Attempting to give %d x '%s'." % [item_node.amount, item_node.item_id])
 			adapter.give_item(item_node.item_id, item_node.amount)
-			logger.log("Inventory", "  - Result: SUCCESS (Give action always succeeds for now)")
+			if is_instance_valid(logger):
+				logger.log("Inventory", "  - Result: SUCCESS (Give action always succeeds for now)")
 			controller._trigger_next_nodes_from_port(item_node, 0) # Port 0: Success
 			controller._mark_node_as_complete(item_node)
 
 		item_node.Action.TAKE:
-			logger.log("Inventory", "  - Action: TAKE")
-			logger.log("Inventory", "  - Attempting to take %d x '%s'." % [item_node.amount, item_node.item_id])
+			if is_instance_valid(logger):
+				logger.log("Inventory", "  - Action: TAKE")
+				logger.log("Inventory", "  - Attempting to take %d x '%s'." % [item_node.amount, item_node.item_id])
 			var success = adapter.take_item(item_node.item_id, item_node.amount)
 			if success:
-				logger.log("Inventory", "  - Result: SUCCESS (Items were taken)")
+				if is_instance_valid(logger):
+					logger.log("Inventory", "  - Result: SUCCESS (Items were taken)")
 				controller._trigger_next_nodes_from_port(item_node, 0) # Port 0: Success
 			else:
-				logger.log("Inventory", "  - Result: FAILURE (Not enough items to take)")
+				if is_instance_valid(logger):
+					logger.log("Inventory", "  - Result: FAILURE (Not enough items to take)")
 				controller._trigger_next_nodes_from_port(item_node, 1) # Port 1: Failure
 			
 			# The node is marked as complete regardless of success or failure.

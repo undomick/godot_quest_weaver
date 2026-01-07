@@ -52,11 +52,18 @@ func to_dictionary() -> Dictionary:
 
 func from_dictionary(data: Dictionary):
 	super.from_dictionary(data)
-	self.quest_type = data.get("quest_type", QuestType.SIDE)
+	self.quest_type = _defensive_load(data, "quest_type", QuestType.keys(), QuestType.SIDE)
 	self.quest_id = data.get("quest_id", "")
 	self.quest_title = data.get("quest_title", "")
 	self.quest_description = data.get("quest_description", "")
 	self.log_on_start = data.get("log_on_start", "")
+
+## PRIVATE METHOD: Checks if an integer value is valid for the enum type.
+func _defensive_load(data: Dictionary, prop: String, keys: Array, default_val: int) -> int:
+	var val = data.get(prop, default_val)
+	if val is int and val >= 0 and val < keys.size():
+		return val
+	return default_val
 
 func _validate(_context: Dictionary) -> Array[ValidationResult]:
 	var results: Array[ValidationResult] = []

@@ -50,7 +50,9 @@ func to_dictionary() -> Dictionary:
 func from_dictionary(data: Dictionary):
 	self.id = data.get("id", "")
 	self.description = data.get("description", "")
-	self.trigger_type = data.get("trigger_type", TriggerType.MANUAL)
+	
+	self.trigger_type = _defensive_load(data, "trigger_type", TriggerType.keys(), TriggerType.MANUAL)
+	
 	self.trigger_params = data.get("trigger_params", {})
 	self.required_progress = data.get("required_progress", 1)
 	self.track_progress_since_activation = data.get("track_progress_since_activation", false)
@@ -58,3 +60,10 @@ func from_dictionary(data: Dictionary):
 	self.current_progress = 0
 	self.owner_task_node_id = ""
 	self._item_count_on_activation = 0
+
+## PRIVATE METHOD: Checks if an integer value is valid for the enum type.
+func _defensive_load(data: Dictionary, prop: String, keys: Array, default_val: int) -> int:
+	var val = data.get(prop, default_val)
+	if val is int and val >= 0 and val < keys.size():
+		return val
+	return default_val

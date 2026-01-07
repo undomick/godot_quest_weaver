@@ -33,7 +33,7 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 	anim_player.play(cutscene_node.animation_name)
 
 	if cutscene_node.wait_for_completion:
-		_wait_for_animation_and_complete(anim_player, cutscene_node, controller)
+		_wait_for_animation_and_complete(anim_player, cutscene_node, controller, context)
 	else:
 		# The non-blocking variant also handles the "On Finish" trigger.
 		anim_player.animation_finished.connect(
@@ -42,17 +42,10 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 				controller._mark_node_as_complete(cutscene_node), CONNECT_ONE_SHOT
 		)
 
-# This private helper function remains unchanged.
-func _wait_for_animation_and_complete(anim_player: AnimationPlayer, node_instance: PlayCutsceneNodeResource, controller: QuestController):
+func _wait_for_animation_and_complete(anim_player: AnimationPlayer, node_instance: PlayCutsceneNodeResource, controller: QuestController, context: ExecutionContext):
 	await anim_player.animation_finished
 	
-	# Safe logger lookup to avoid static dependency issues on first load
-	var logger = null
-	var main_loop = Engine.get_main_loop()
-	if main_loop and main_loop.root:
-		var services = main_loop.root.get_node_or_null("QuestWeaverServices")
-		if is_instance_valid(services):
-			logger = services.logger
+	var logger = context.logger
 	
 	if is_instance_valid(logger):
 		logger.log("Executor", "  - PlayCutsceneNode '%s' finished waiting." % node_instance.id)

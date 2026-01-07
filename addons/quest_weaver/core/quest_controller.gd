@@ -12,6 +12,7 @@ signal quest_data_changed(quest_id: String)
 var _timer_manager: QuestTimerManager
 var _sync_manager: QuestSyncManager
 var _event_manager: QuestEventManager
+var _scope_manager: QuestScopeManager # NEU: Scope Manager
 var _persistence_manager: QuestStatePersistenceManager
 var _execution_context: ExecutionContext
 var _inventory_adapter: QuestInventoryAdapterBase = null
@@ -32,6 +33,27 @@ var _executors: Dictionary = {}
 var _node_registry: NodeTypeRegistry
 
 
+# Helper to safely get the singleton without breaking compilation
+func _get_services() -> Node:
+	var main_loop = Engine.get_main_loop()
+	if main_loop and main_loop.root:
+		return main_loop.root.get_node_or_null("QuestWeaverServices")
+	return null
+
+# Helper to safely access the logger, even if initialization order is messy
+func _get_logger() -> QWLogger:
+	# 1. Use local reference if available
+	if is_instance_valid(_logger):
+		return _logger
+		
+	# 2. Fallback: Try to find via Services
+	var services = _get_services()
+	if is_instance_valid(services):
+		return services.logger
+		
+	return null
+
+
 func _ready() -> void:
 	await get_tree().process_frame
 	
@@ -41,18 +63,12 @@ func _ready() -> void:
 	
 	_initialize_dependencies_and_start()
 
-# Helper to safely get the singleton without breaking compilation
-func _get_services() -> Node:
-	var main_loop = Engine.get_main_loop()
-	if main_loop and main_loop.root:
-		return main_loop.root.get_node_or_null("QuestWeaverServices")
-	return null
-
 func _initialize_dependencies_and_start() -> void:
 	_initialize_managers()
 	_register_executors()
 	_initialize_inventory_adapter()
 	_initialize_quest_graphs()
+	_scope_manager.initialize_scope_definitions(_node_definitions, _node_connections) # NEU: Scope Manager init
 	_connect_global_signals()
 	
 	var services = _get_services()
@@ -69,6 +85,7 @@ func _initialize_managers():
 	_timer_manager = QuestTimerManager.new(self)
 	_sync_manager = QuestSyncManager.new(self)
 	_event_manager = QuestEventManager.new(self)
+	_scope_manager = QuestScopeManager.new(self) # NEU: Scope Manager
 	
 	_logger = QWLogger.new()
 	_logger.initialize()
@@ -200,6 +217,7 @@ func reset_all_graphs_and_quests():
 	_timer_manager.clear_all_timers()
 	_sync_manager.clear()
 	_event_manager.clear()
+	_scope_manager.clear() # Scope Manager
 	_active_quests.clear()
 
 func start_all_loaded_graphs():
@@ -254,13 +272,12 @@ func start_quest(node_data: QuestContextNodeResource) -> void:
 		push_warning("QuestWeaver: Cannot start quest '%s'. It is already registered with status: %s." % [quest_id, status_str])
 
 func start_sub_graph(graph_path: String):
-	if not _quest_node_map.has(graph_path):
-		if ResourceLoader.exists(graph_path):
-			var graph_res = ResourceLoader.load(graph_path)
-			_load_graph_data(graph_res)
-		else:
-			push_error("QuestController: Could not load sub-graph resource at '%s'." % graph_path)
-			return
+	if ResourceLoader.exists(graph_path):
+		var graph_res = ResourceLoader.load(graph_path)
+		_load_graph_data(graph_res)
+	else:
+		push_error("QuestController: Could not load sub-graph resource at '%s'." % graph_path)
+		return
 	
 	var nodes_in_graph = _quest_node_map.get(graph_path, [])
 	var start_node_found = false
@@ -617,21 +634,25 @@ func _check_task_node_completion(node: TaskNodeResource):
 
 func _ensure_execution_context_exists() -> void:
 	if not is_instance_valid(_execution_context):
-		# FIX: Dynamic Lookup for GameState
 		var services = _get_services()
 		var game_state_instance = null
 		if services:
 			game_state_instance = services.get_game_state()
 		
 		if not is_instance_valid(game_state_instance):
-			# Last resort fallback or error
 			print("[DEBUG] CRITICAL: GameState instance not found during context creation.")
 			return
 		
-		_execution_context = ExecutionContext.new(self, game_state_instance)
+		_execution_context = ExecutionContext.new(self, game_state_instance, _logger, services)
 
 func _load_graph_data(graph_resource: QuestGraphResource):
 	var path = graph_resource.resource_path
+	
+	if _quest_node_map.has(path):
+		var logger = _get_logger()
+		if logger:
+			logger.log("System", "Skipping load of '%s'. Definitions already in memory." % path.get_file())
+		return
 	
 	_quest_node_map[path] = []
 	
@@ -806,18 +827,14 @@ func _cleanup_graph_instances(graph_path: String) -> void:
 		
 		if is_instance_valid(logger):
 			logger.log("Flow", "  - Force-closed node: %s" % node_id)
-
-# Helper to safely access the logger, even if initialization order is messy
-func _get_logger() -> QWLogger:
-	# 1. Use local reference if available
-	if is_instance_valid(_logger):
-		return _logger
-		
-	# 2. Fallback: Try to find via Services
-	var main_loop = Engine.get_main_loop()
-	if main_loop and main_loop.root:
-		var services = main_loop.root.get_node_or_null("QuestWeaverServices")
-		if is_instance_valid(services) and services.logger:
-			return services.logger
-			
-	return null
+# Helper function for ScopeManager to mark node complete without checking listeners or cleanup
+func _mark_node_as_logically_complete(node: GraphNodeResource) -> void:
+	var logger = _logger
+	if is_instance_valid(logger):
+		logger.log("Flow", "  <- Marking Node as Logically Complete (No trigger/cleanup): '%s'" % [node.id])
+	
+	node.status = GraphNodeResource.Status.COMPLETED
+	
+	_completed_nodes[node.id] = node
+	if _active_nodes.has(node.id):
+		_active_nodes.erase(node.id)

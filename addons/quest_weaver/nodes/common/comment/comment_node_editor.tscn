@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://c5luhmqsbcbkk"]
+[gd_scene load_steps=3 format=3 uid="uid://c5luhmqsbcbkk"]
 
 [ext_resource type="Script" uid="uid://jegbgcpvwkjd" path="res://addons/quest_weaver/nodes/common/comment/comment_node_editor.gd" id="1_0xfnj"]
+[ext_resource type="Script" uid="uid://c6oph8cilr6lc" path="res://addons/quest_weaver/editor/components/tab_focus_text_edit.gd" id="2_fc7io"]
 
 [node name="CommentNodeEditor" type="VBoxContainer"]
 custom_minimum_size = Vector2(100, 100)
@@ -15,3 +16,5 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 wrap_mode = 1
+script = ExtResource("2_fc7io")
+metadata/_custom_type_script = "uid://c6oph8cilr6lc"

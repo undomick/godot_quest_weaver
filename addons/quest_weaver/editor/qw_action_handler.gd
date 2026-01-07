@@ -26,6 +26,8 @@ const RemoveSyncInputPortCommand = preload("commands/remove_sync_input_port_comm
 const AddSyncOutputPortCommand = preload("commands/add_sync_output_port_command.gd")
 const RemoveSyncOutputPortCommand = preload("commands/remove_sync_output_port_command.gd")
 const CreateBackdropCommand = preload("commands/create_backdrop_command.gd")
+const AddPayloadCommand = preload("commands/add_payload_command.gd")
+const RemovePayloadCommand = preload("commands/remove_payload_command.gd")
 
 
 # --- Dependencies ---
@@ -108,6 +110,10 @@ func on_complex_action_requested(node_id: String, action: String, payload: Dicti
 			if node_data is SynchronizeNodeResource: command = RemoveSyncOutputPortCommand.new(editable_graph, node_data, payload.get("index", -1))
 		"update_sync_output_name":
 			if node_data is SynchronizeNodeResource: command = ChangePropertyCommand.new(node_data.outputs[payload.get("index")], "port_name", payload.get("new_name"))
+		"add_payload_entry":
+			if node_data is EventNodeResource: command = AddPayloadCommand.new(node_data)
+		"remove_payload_entry":
+			if node_data is EventNodeResource: command = RemovePayloadCommand.new(node_data, payload.get("entry"))
 		_:
 			push_warning("QWActionHandler: Received unknown complex action '%s'" % action)
 

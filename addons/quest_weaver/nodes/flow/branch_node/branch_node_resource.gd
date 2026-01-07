@@ -148,7 +148,8 @@ func to_dictionary() -> Dictionary:
 
 func from_dictionary(data: Dictionary):
 	super.from_dictionary(data)
-	self.operator = data.get("operator", LogicOperator.AND)
+	self.operator = _defensive_load(data, "operator", LogicOperator.keys(), LogicOperator.AND)
+	
 	self.conditions.clear()
 	for c_data in data.get("conditions", []):
 		var script = load(c_data.get("@script_path"))
@@ -156,6 +157,13 @@ func from_dictionary(data: Dictionary):
 			var new_c = script.new()
 			new_c.from_dictionary(c_data)
 			self.conditions.append(new_c)
+
+## PRIVATE METHOD: Checks if an integer value is valid for the enum type.
+func _defensive_load(data: Dictionary, prop: String, keys: Array, default_val: int) -> int:
+	var val = data.get(prop, default_val)
+	if val is int and val >= 0 and val < keys.size():
+		return val
+	return default_val
 
 func determine_default_size() -> QWNodeSizes.Size:
 	return QWNodeSizes.Size.LARGE

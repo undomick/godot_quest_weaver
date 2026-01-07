@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://cwk36v7yrmvwc" path="res://addons/quest_weaver/editor/side_panel.gd" id="1_5q1rv"]
 [ext_resource type="Texture2D" uid="uid://1r0xlayw44ce" path="res://addons/quest_weaver/assets/icons/share_love.svg" id="2_rn2th"]
 
-[sub_resource type="DPITexture" id="DPITexture_v58pa"]
+[sub_resource type="DPITexture" id="DPITexture_giafe"]
 _source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#ff5d5d\" d=\"M2 1v8.586l1.293-1.293a1 1 0 0 1 1.414 0L7 10.587l2.293-2.293a1 1 0 0 1 1.414 0L13 10.586l1-1V6H9V1H2zm8 0v4h4zm-6 9.414-2 2V15h12v-2.586l-.293.293a1 1 0 0 1-1.414 0L10 10.414l-2.293 2.293a1 1 0 0 1-1.414 0L4 10.414z\"/></svg>
 "
 
@@ -35,14 +35,14 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(16, 24)
 layout_mode = 2
-icon = SubResource("DPITexture_v58pa")
+icon = SubResource("DPITexture_giafe")
 flat = true
 
 [node name="OpenButton" type="Button" parent="Toolbar"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(16, 24)
 layout_mode = 2
-icon = SubResource("DPITexture_v58pa")
+icon = SubResource("DPITexture_giafe")
 flat = true
 
 [node name="SaveButton" type="Button" parent="Toolbar"]
@@ -50,7 +50,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(16, 24)
 layout_mode = 2
 disabled = true
-icon = SubResource("DPITexture_v58pa")
+icon = SubResource("DPITexture_giafe")
 flat = true
 
 [node name="Spacer" type="Control" parent="Toolbar"]
@@ -66,7 +66,7 @@ icon = ExtResource("2_rn2th")
 unique_name_in_owner = true
 custom_minimum_size = Vector2(16, 24)
 layout_mode = 2
-icon = SubResource("DPITexture_v58pa")
+icon = SubResource("DPITexture_giafe")
 flat = true
 
 [node name="Bookmarks" type="VSplitContainer" parent="."]
@@ -79,7 +79,7 @@ layout_mode = 2
 [node name="FilterEdit" type="LineEdit" parent="Bookmarks/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-right_icon = SubResource("DPITexture_v58pa")
+right_icon = SubResource("DPITexture_giafe")
 
 [node name="List" type="ItemList" parent="Bookmarks/VBoxContainer"]
 unique_name_in_owner = true

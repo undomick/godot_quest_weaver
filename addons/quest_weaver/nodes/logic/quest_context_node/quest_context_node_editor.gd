@@ -5,8 +5,8 @@ extends NodePropertyEditorBase
 @onready var quest_id_edit: LineEdit = %QuestIdEdit
 @onready var quest_type_picker: OptionButton = %QuestTypePicker
 @onready var title_edit: LineEdit = %TitleEdit
-@onready var description_edit: TextEdit = %DescriptionEdit
-@onready var log_on_start_edit: TextEdit = %LogOnStartEdit
+@onready var description_edit: TabFocusTextEdit = %DescriptionEdit
+@onready var log_on_start_edit: TabFocusTextEdit = %LogOnStartEdit
 
 func _ready() -> void:
 	quest_id_edit.text_submitted.connect(func(_text): _on_quest_id_confirmed())

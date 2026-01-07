@@ -3,7 +3,7 @@
 extends NodePropertyEditorBase
 
 @onready var target_picker: OptionButton = %TargetPicker
-@onready var content_edit: TextEdit = %ContentEdit
+@onready var content_edit: TabFocusTextEdit = %ContentEdit
 
 func _ready() -> void:
 	target_picker.item_selected.connect(_on_target_selected)

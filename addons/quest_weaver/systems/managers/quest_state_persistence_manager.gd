@@ -10,7 +10,8 @@ func save_state(controller: QuestController) -> Dictionary:
 		"objective_progress": {},
 		"active_timers": controller._timer_manager.get_save_data(),
 		"active_listeners": controller._event_manager.get_save_data(),
-		"active_synchronizers": controller._sync_manager.get_save_data()
+		"active_synchronizers": controller._sync_manager.get_save_data(),
+		"scopes": controller._scope_manager.get_save_data()
 	}
 
 	for node_instance in controller._active_nodes.values():
@@ -67,6 +68,7 @@ func load_state(controller: QuestController, data: Dictionary) -> void:
 	controller._timer_manager.load_save_data(data.get("active_timers", {}), controller._active_nodes)
 	controller._event_manager.load_save_data(data.get("active_listeners", {}))
 	controller._sync_manager.load_save_data(data.get("active_synchronizers", {}))
+	controller._scope_manager.load_save_data(data.get("scopes", {}))
 
 	for quest_id in controller._active_quests:
 		controller.quest_data_changed.emit(quest_id)

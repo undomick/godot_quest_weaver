@@ -9,13 +9,8 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 	var controller = context.quest_controller
 	
 	if jump_node.target_anchor_name.is_empty():
-		# Safe logger lookup to avoid static dependency issues on first load
-		var logger = null
-		var main_loop = Engine.get_main_loop()
-		if main_loop and main_loop.root:
-			var services = main_loop.root.get_node_or_null("QuestWeaverServices")
-			if is_instance_valid(services):
-				logger = services.logger
+		# Safe logger lookup zu context.logger
+		var logger = context.logger
 		
 		if logger:
 			logger.warn("Flow", "JumpNode '%s' has no target anchor name." % jump_node.id)
