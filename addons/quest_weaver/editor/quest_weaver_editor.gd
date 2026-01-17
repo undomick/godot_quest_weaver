@@ -14,7 +14,7 @@ signal validation_finished(results: Array)
 @onready var localization_button: Button = %LocalizatonButton
 
 var node_registry: NodeTypeRegistry
-var editor_plugin_instance: QuestWeaverPlugin
+var editor_plugin_instance # Removed type hint 'QuestWeaverPlugin'
 var editor_session_data: QuestEditorData
 var validator: QuestValidator
 var _input_handler: QWInputHandler
@@ -22,7 +22,7 @@ var _history: QWEditorHistory
 var _clipboard: QWClipboard
 var _action_handler: QWActionHandler
 var _node_factory: QWNodeFactory
-var _editor_interface: EditorInterface
+var _editor_interface # Removed type hint 'EditorInterface'
 
 # State variables for node creation context
 var _pending_node_creation_pos: Vector2
@@ -37,7 +37,7 @@ var _completed_stylebox: StyleBoxFlat
 var _live_pulse_tween: Tween
 
 
-func initialize(plugin: QuestWeaverPlugin, p_session_data: QuestEditorData, p_editor_interface: EditorInterface) -> void:
+func initialize(plugin, p_session_data: QuestEditorData, p_editor_interface) -> void:
 	self.editor_plugin_instance = plugin
 	self.editor_session_data = p_session_data
 	self._editor_interface = p_editor_interface
@@ -60,7 +60,7 @@ func initialize(plugin: QuestWeaverPlugin, p_session_data: QuestEditorData, p_ed
 	_input_handler.initialize(self, _history, _action_handler, graph_controller, _editor_interface)
 	properties_panel.initialize(node_registry, data_manager, editor_plugin_instance)
 	graph_controller.initialize(node_registry, data_manager, 1.0)
-	side_panel.initialize(data_manager)
+	side_panel.initialize(data_manager, p_editor_interface)
 	
 	version_label.text = "v%s" % editor_plugin_instance.get_version()
 	_connect_signals()
@@ -107,12 +107,10 @@ func _connect_signals() -> void:
 	_action_handler.node_data_changed.connect(_on_node_data_changed)
 	_node_factory.create_backdrop_requested.connect(_create_backdrop_from_selection)
 
-
 func _input(event: InputEvent) -> void:
 	if not visible: return
 	if _input_handler.handle_event(event):
 		get_viewport().set_input_as_handled()
-
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
@@ -152,26 +150,26 @@ func clear_graph_selection() -> void:
 		if node is GraphElement and node.selected:
 			node.selected = false
 	
-	# CHANGE: Instead of hiding/closing, just clear the content
 	properties_panel.clear_inspection()
 
 func save_single_file(path: String) -> void:
-	# The logic for the currently active graph remains the same.
 	if path == data_manager.get_active_graph_path():
 		data_manager.save_active_graph()
 	else:
-		# For background files, call our new, non-visual save function.
 		data_manager.save_graph(path)
 
 func validate_open_files_exist() -> void:
 	if not is_instance_valid(side_panel): return
+	
+	side_panel.check_for_moved_files_via_uid()
 	
 	var files_to_close: Array[String] = []
 	var open_files = side_panel.get_open_files()
 	
 	for path in open_files:
 		if not FileAccess.file_exists(path):
-			files_to_close.append(path)
+			if not side_panel.is_uid_valid_for_path(path):
+				files_to_close.append(path)
 			
 	if not files_to_close.is_empty():
 		for path_to_close in files_to_close:
@@ -231,6 +229,10 @@ func _on_active_graph_changed(new_graph_resource: QuestGraphResource) -> void:
 		properties_panel.clear_inspection()
 
 func _on_create_new_file_at_path(path: String):
+	if not Engine.is_editor_hint():
+		push_error("Attempted to create new file in exported build.")
+		return
+
 	var new_res = QuestGraphResource.new()
 	var file = FileAccess.open(path, FileAccess.WRITE)
 	if not file:
@@ -239,9 +241,7 @@ func _on_create_new_file_at_path(path: String):
 	file.store_var(new_res.to_dictionary(), true)
 	file.close()
 	
-	EditorInterface.get_resource_filesystem().scan()
-	await get_tree().create_timer(0.1).timeout
-	edit_graph(path)
+	call_deferred("_scan_and_edit_new_graph", path)
 
 func _on_bookmark_selected(path: String) -> void:
 	data_manager.set_active_graph(path)
@@ -282,6 +282,12 @@ func _on_graph_view_changed(scroll_offset: Vector2, zoom: float):
 func _on_graph_was_saved(_path: String):
 	call_deferred("_update_quest_registry")
 	QWEditorUtils.clear_cache()
+	
+	if is_instance_valid(side_panel):
+		side_panel.refresh_category_for_path(_path)
+	
+	if Engine.is_editor_hint():
+		call_deferred("_runtime_scan_filesystem")
 
 func _load_session_data() -> void:
 	if not is_instance_valid(editor_session_data) or not is_instance_valid(side_panel):
@@ -301,27 +307,26 @@ func _load_session_data() -> void:
 				break
 
 func _update_quest_registry() -> void:
-	if QWConstants.Settings.quest_registry_path.is_empty() or QWConstants.Settings.quest_scan_folder.is_empty():
+	if QWConstants.get_settings().quest_registry_path.is_empty() or QWConstants.get_settings().quest_scan_folder.is_empty():
 		return
 	
-	var registry: QuestRegistry = ResourceLoader.load(QWConstants.Settings.quest_registry_path, "", ResourceLoader.CACHE_MODE_REPLACE)
+	var registry: QuestRegistry = ResourceLoader.load(QWConstants.get_settings().quest_registry_path, "", ResourceLoader.CACHE_MODE_REPLACE)
 	if not is_instance_valid(registry):
 		return
 	
-	QuestRegistrar.update_registry_from_project(registry, QWConstants.Settings.quest_scan_folder)
+	QuestRegistrar.update_registry_from_project(registry, QWConstants.get_settings().quest_scan_folder)
 
 func _on_scan_keys_pressed():
+	if not Engine.is_editor_hint(): return # Protection block
 	LocalizationKeyScanner.update_localization_file(
-		QWConstants.Settings.quest_scan_folder,
-		QWConstants.Settings.localization_csv_path
+		QWConstants.get_settings().quest_scan_folder,
+		QWConstants.get_settings().localization_csv_path
 	)
-	EditorInterface.get_resource_filesystem().scan()
-
+	call_deferred("_runtime_scan_filesystem")
 
 func add_visual_node(node_data: GraphNodeResource) -> void:
 	if is_instance_valid(graph_controller):
 		graph_controller.create_single_visual_node(node_data)
-
 
 func remove_visual_node(node_id: String) -> void:
 	if is_instance_valid(graph_controller):
@@ -329,16 +334,13 @@ func remove_visual_node(node_id: String) -> void:
 		if is_instance_valid(node_to_remove):
 			node_to_remove.queue_free()
 
-
 func add_visual_connection(from_node: StringName, from_port: int, to_node: StringName, to_port: int) -> void:
 	if is_instance_valid(graph_controller):
 		graph_controller.add_visual_connection(from_node, from_port, to_node, to_port)
 
-
 func remove_visual_connection(from_node: StringName, from_port: int, to_node: StringName, to_port: int) -> void:
 	if is_instance_valid(graph_controller):
 		graph_controller.remove_visual_connection(from_node, from_port, to_node, to_port)
-
 
 # This function is called whenever the ActionHandler confirms that node data has changed.
 func _on_node_data_changed(node_id: String, action: String) -> void:
@@ -360,7 +362,6 @@ func _on_node_data_changed(node_id: String, action: String) -> void:
 	if properties_panel.visible and properties_panel.get_inspected_node_id() == node_id:
 		properties_panel.call_deferred("refresh_inspected_node")
 
-
 func _on_validation_requested() -> void:
 	var current_graph = data_manager.get_active_graph()
 	if not is_instance_valid(current_graph):
@@ -369,7 +370,6 @@ func _on_validation_requested() -> void:
 	
 	var results: Array[ValidationResult] = validator.validate_graph(current_graph)
 	validation_finished.emit(results)
-
 
 func _on_validation_result_selected(node_id: String) -> void:
 	if node_id.is_empty():
@@ -385,20 +385,17 @@ func _on_validation_result_selected(node_id: String) -> void:
 		var current_zoom = graph_controller.zoom if graph_controller.zoom > 0 else 1.0
 		graph_controller.scroll_offset = node_pos - (view_size / (2.0 * current_zoom))
 
-
 func _on_debug_session_started():
 	_live_debugging_active = true
 	_clear_all_highlights()
 	_completed_node_ids.clear()
 	_live_node_id = ""
 
-
 func _on_debug_session_ended():
 	_live_debugging_active = false
 	_clear_all_highlights()
 	if is_instance_valid(_live_pulse_tween):
 		_live_pulse_tween.kill()
-
 
 func _on_debug_node_activated(node_id: String):
 	if not _live_debugging_active: return
@@ -412,7 +409,6 @@ func _on_debug_node_activated(node_id: String):
 	_update_node_style(_live_node_id, _live_stylebox)
 	_pulse_live_node(node_id)
 
-
 func _on_debug_node_completed(node_id: String):
 	if not _live_debugging_active: return
 	if node_id == _live_node_id:
@@ -422,20 +418,17 @@ func _on_debug_node_completed(node_id: String):
 	_completed_node_ids[node_id] = true
 	_update_node_style(node_id, _completed_stylebox)
 
-
 func _update_node_style(node_id: String, style: StyleBox):
 	if node_id.is_empty(): return
 	var visual_node = graph_controller.get_node_or_null(NodePath(node_id))
 	if is_instance_valid(visual_node) and visual_node is GraphNode:
 		visual_node.set("theme_override_styles/panel", style)
 
-
 func _clear_all_highlights():
 	if is_instance_valid(graph_controller) and graph_controller.is_visible_in_tree():
 		for child in graph_controller.get_children():
 			if child is GraphNode:
 				child.set("theme_override_styles/panel", null)
-
 
 func _pulse_live_node(node_id: String):
 	var visual_node = graph_controller.get_node_or_null(NodePath(node_id))
@@ -447,3 +440,15 @@ func _pulse_live_node(node_id: String):
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_live_pulse_tween.tween_property(new_stylebox, "bg_color", _live_stylebox.bg_color, 0.7)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _scan_and_edit_new_graph(path: String):
+	_runtime_scan_filesystem() 
+	
+	await get_tree().create_timer(0.1).timeout
+	edit_graph(path)
+
+## Internal function to safely access EditorInterface methods when needed.
+func _runtime_scan_filesystem() -> void:
+	# This function relies on _editor_interface being set, but avoids any type hints.
+	if is_instance_valid(_editor_interface):
+		_editor_interface.get_resource_filesystem().scan()

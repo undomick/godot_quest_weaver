@@ -1,6 +1,6 @@
 # res://addons/quest_weaver/systems/managers/quest_timer_manager.gd
 class_name QuestTimerManager
-extends Object
+extends RefCounted
 
 ## Manages all active TimerNode instances for a QuestController.
 

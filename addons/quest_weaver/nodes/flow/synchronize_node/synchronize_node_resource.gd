@@ -46,9 +46,6 @@ func get_description() -> String:
 func get_icon() -> Texture2D:
 	return preload("res://addons/quest_weaver/assets/icons/join.svg")
 
-func execute(_controller): 
-	pass
-
 # ==============================================================================
 # EDITOR API - Called by SynchronizeNodeEditor
 # ==============================================================================

@@ -1,7 +1,7 @@
 # res://addons/quest_weaver/editor/qw_editor_history.gd
 @tool
 class_name QWEditorHistory
-extends Object
+extends RefCounted
 
 signal version_changed
 

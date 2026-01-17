@@ -10,7 +10,6 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 	var root = controller.get_tree().get_root()
 	if not root:
 		push_error("PlayCutsceneNode: Could not find the scene tree root.")
-		# --- In case of error, trigger "On Finish" (Port 1) ---
 		controller._trigger_next_nodes_from_port(cutscene_node, 1)
 		controller._mark_node_as_complete(cutscene_node)
 		return
@@ -29,26 +28,39 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 		controller._mark_node_as_complete(cutscene_node)
 		return
 
+	# --- GLOBAL LOCK START ---
+	if cutscene_node.wait_for_completion:
+		var global_bus = controller.get_tree().root.get_node_or_null("QuestWeaverGlobal")
+		if is_instance_valid(global_bus):
+			global_bus.lock_interaction(cutscene_node.id)
+	# -------------------------
+
 	controller._trigger_next_nodes_from_port(cutscene_node, 0)
 	anim_player.play(cutscene_node.animation_name)
 
 	if cutscene_node.wait_for_completion:
-		_wait_for_animation_and_complete(anim_player, cutscene_node, controller, context)
+		await anim_player.animation_finished
+		
+		# --- GLOBAL LOCK END ---
+		var global_bus = controller.get_tree().root.get_node_or_null("QuestWeaverGlobal")
+		if is_instance_valid(global_bus):
+			global_bus.unlock_interaction(cutscene_node.id)
+		# -----------------------
+		
+		var logger = context.logger
+		if is_instance_valid(logger):
+			logger.log("Executor", "  - PlayCutsceneNode '%s' finished waiting." % cutscene_node.id)
+		
+		# Only complete if still active (not skipped)
+		if controller._active_nodes.has(cutscene_node.id):
+			controller._trigger_next_nodes_from_port(cutscene_node, 1) # Port 1: "On Finish"
+			controller._mark_node_as_complete(cutscene_node)
 	else:
-		# The non-blocking variant also handles the "On Finish" trigger.
+		# Fire and Forget logic
 		anim_player.animation_finished.connect(
 			func(_anim_name):
-				controller._trigger_next_nodes_from_port(cutscene_node, 1) # Port 1: "On Finish"
-				controller._mark_node_as_complete(cutscene_node), CONNECT_ONE_SHOT
+				if controller._active_nodes.has(cutscene_node.id):
+					controller._trigger_next_nodes_from_port(cutscene_node, 1) # Port 1: "On Finish"
+					controller._mark_node_as_complete(cutscene_node), 
+			CONNECT_ONE_SHOT
 		)
-
-func _wait_for_animation_and_complete(anim_player: AnimationPlayer, node_instance: PlayCutsceneNodeResource, controller: QuestController, context: ExecutionContext):
-	await anim_player.animation_finished
-	
-	var logger = context.logger
-	
-	if is_instance_valid(logger):
-		logger.log("Executor", "  - PlayCutsceneNode '%s' finished waiting." % node_instance.id)
-	
-	controller._trigger_next_nodes_from_port(node_instance, 1) # Port 1: "On Finish"
-	controller._mark_node_as_complete(node_instance)

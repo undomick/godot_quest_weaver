@@ -35,11 +35,14 @@ extends Resource
 ## Localization Keys have to look like this to be considered: FIND_SOME_METAL_QUEST or HELLO_WORLD or QUEST001_MAMA_WILL_HELP
 @export_file("*.csv") var localization_csv_path: String
 
-## If you don't plan to customize Quest Weaver, you can ignore those.
-@export_group("Internal Data")
-## Stores the list of all found Quest IDs (scanned from QuestContext nodes). 
-## Used for validation and auto-completion.
-@export_file("*.tres") var quest_registry_path: String
+# ==============================================================================
+# INTERNAL DATA (Hidden from Inspector)
+# ==============================================================================
 
-## Stores the editor session state (open files, active graph) to restore it on restart.
-@export_file("*.tres", "res://") var editor_data_path: String
+@export var quest_registry_path: String = "res://addons/quest_weaver/core/quest_registry.tres"
+@export var editor_data_path: String = "res://addons/quest_weaver/core/quest_editor_data.tres"
+
+func _validate_property(property: Dictionary) -> void:
+	# Hide internal paths from the Inspector, but keep them strictly serializable (STORAGE).
+	if property.name in ["quest_registry_path", "editor_data_path"]:
+		property.usage = PROPERTY_USAGE_STORAGE

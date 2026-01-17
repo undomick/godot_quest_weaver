@@ -1,6 +1,6 @@
 # res://addons/quest_weaver/systems/managers/quest_scope_manager.gd
 class_name QuestScopeManager
-extends Object
+extends RefCounted
 
 ## Manages the execution state and reset logic for all active Scopes (StartScopeNode/EndScopeNode).
 

@@ -15,7 +15,7 @@ signal node_ports_changed(node_id: String)
 # --- Dependencies & State ---
 var node_registry: NodeTypeRegistry
 var data_manager: QWGraphData
-var editor_plugin: EditorPlugin
+var editor_plugin # Removed type hint 'EditorPlugin'
 var current_editor_instance: Node
 var _inspected_node_data: GraphNodeResource
 
@@ -24,7 +24,7 @@ func _ready() -> void:
 	# Removed window specific signals (close_requested etc.)
 	_update_visibility()
 
-func initialize(p_node_registry: NodeTypeRegistry, p_data_manager: QWGraphData, p_editor_plugin: EditorPlugin) -> void:
+func initialize(p_node_registry: NodeTypeRegistry, p_data_manager: QWGraphData, p_editor_plugin) -> void:
 	self.node_registry = p_node_registry
 	self.data_manager = p_data_manager
 	self.editor_plugin = p_editor_plugin

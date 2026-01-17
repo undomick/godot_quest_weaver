@@ -42,9 +42,6 @@ func get_description() -> String:
 func get_icon() -> Texture2D:
 	return preload("res://addons/quest_weaver/assets/icons/give_take.svg")
 
-func execute(controller) -> void:
-	pass
-
 func to_dictionary() -> Dictionary:
 	var data = super.to_dictionary()
 	data["item_id"] = self.item_id

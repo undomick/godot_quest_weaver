@@ -2,6 +2,8 @@
 @tool
 extends VBoxContainer
 
+const ConditionEditorScene = preload("res://addons/quest_weaver/editor/conditions/condition_editor.tscn")
+
 signal property_changed(property_name: String, new_value: Variant)
 signal rebuild_requested()
 
@@ -134,7 +136,7 @@ func _rebuild_ui():
 				var sub_condition = edited_condition.sub_conditions[i]
 				var sub_editor_container = HBoxContainer.new()
 				
-				var sub_editor = QWConstants.ConditionEditorScene.instantiate()
+				var sub_editor = ConditionEditorScene.instantiate()
 				sub_editor.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 				sub_editor_container.add_child(sub_editor)
 				

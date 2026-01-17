@@ -1,6 +1,6 @@
 # res://addons/quest_weaver/systems/managers/quest_sync_manager.gd
 class_name QuestSyncManager
-extends Object
+extends RefCounted
 
 ## Manages the state of all active SynchronizeNode instances.
 

@@ -10,6 +10,7 @@ const QWCharAnimationEffect = preload("res://addons/quest_weaver/editor/presenta
 @onready var message_label: RichTextLabel = %MessageLabel
 
 func present(data: Dictionary) -> void:
+	self.modulate.a = 0.0
 	_presentation_flow(data)
 
 func _presentation_flow(data: Dictionary) -> void:

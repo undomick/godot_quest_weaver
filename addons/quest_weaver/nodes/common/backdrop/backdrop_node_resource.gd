@@ -20,9 +20,6 @@ func get_description() -> String:
 func get_icon() -> Texture2D:
 	return preload("res://addons/quest_weaver/assets/icons/backdrop.svg")
 
-func execute(controller) -> void:
-	pass
-
 func to_dictionary() -> Dictionary:
 	var data = super.to_dictionary()
 	data["title"] = self.title

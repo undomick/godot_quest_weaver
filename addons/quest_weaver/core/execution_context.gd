@@ -17,8 +17,8 @@ var interact_objective_listeners: Dictionary = {}
 var location_objective_listeners: Dictionary = {} 
 
 ## Constructor to set all dependencies upon creation.
-func _init(p_controller: QuestController, p_game_state: Node, p_logger: QWLogger, p_services: Node):
+func _init(p_controller: QuestController, p_game_state: Node, p_logger: QWLogger, p_services: Node) -> void:
 	self.quest_controller = p_controller
 	self.game_state = p_game_state
 	self.logger = p_logger
-	self.services = p_services 
+	self.services = p_services

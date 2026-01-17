@@ -48,9 +48,6 @@ func get_description() -> String:
 func get_icon() -> Texture2D:
 	return preload("res://addons/quest_weaver/assets/icons/random.svg")
 
-func execute(controller):
-	pass
-
 # ==============================================================================
 # EDITOR API - Called by RandomNodeEditor
 # ==============================================================================

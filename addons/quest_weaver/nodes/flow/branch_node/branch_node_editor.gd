@@ -3,6 +3,8 @@
 class_name BranchNodeEditor
 extends NodePropertyEditorBase
 
+const ConditionEditorScene = preload("res://addons/quest_weaver/editor/conditions/condition_editor.tscn")
+
 @onready var operator_picker: OptionButton = %OperatorPicker
 @onready var conditions_list: VBoxContainer = %ConditionsList
 @onready var add_button: Button = %AddConditionButton
@@ -34,7 +36,7 @@ func _rebuild_conditions_list() -> void:
 		var entry_container = HBoxContainer.new()
 		entry_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		
-		var editor_instance = QWConstants.ConditionEditorScene.instantiate()
+		var editor_instance = ConditionEditorScene.instantiate()
 		editor_instance.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		entry_container.add_child(editor_instance)
 

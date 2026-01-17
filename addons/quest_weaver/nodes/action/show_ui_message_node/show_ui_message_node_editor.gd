@@ -149,7 +149,7 @@ func _populate_message_type_picker():
 	message_type_picker.clear()
 	_registry_keys.clear()
 	
-	var settings: QuestWeaverSettings = QWConstants.Settings
+	var settings: QuestWeaverSettings = QWConstants.get_settings()
 	if is_instance_valid(settings) and ResourceLoader.exists(settings.presentation_registry_path):
 		var registry = ResourceLoader.load(settings.presentation_registry_path)
 		if is_instance_valid(registry):

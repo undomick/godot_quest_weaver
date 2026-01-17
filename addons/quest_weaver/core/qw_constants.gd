@@ -3,10 +3,31 @@ class_name QWConstants
 extends RefCounted
 
 # ==============================================================================
-# Settings & Resources
+# Settings & Resources (Replaced with lazy-loaded statics)
 # ==============================================================================
-const Settings = preload("../quest_weaver_settings.tres")
-const GRAPH_NODE_CATEGORY = preload("../assets/graph_node_category.tres")
+static var _settings: Resource = null
+static var _graph_node_category: Resource = null
+static var _is_shutting_down: bool = false
+
+static func get_settings() -> Resource:
+	if _is_shutting_down: return null
+	
+	if not is_instance_valid(_settings):
+		_settings = ResourceLoader.load("res://addons/quest_weaver/quest_weaver_settings.tres")
+	return _settings
+
+static func get_graph_node_category() -> Resource:
+	if _is_shutting_down: return null
+	
+	if not is_instance_valid(_graph_node_category):
+		_graph_node_category = ResourceLoader.load("res://addons/quest_weaver/assets/graph_node_category.tres")
+	return _graph_node_category
+
+static func clear_static_references():
+	# Explicitly set to null to drop the static reference count
+	_is_shutting_down = true
+	_settings = null
+	_graph_node_category = null
 
 # ==============================================================================
 # UI Scenes (.tscn) - Diese müssen wir preloaden, um sie zu instanziieren
@@ -16,7 +37,6 @@ const ValidatorDockScene = preload("../editor/validation/validator_dock.tscn")
 const AutoCompleteLineEditScene = preload("../editor/components/auto_complete_line_edit.tscn")
 const QuestFileDialogScene = preload("../editor/dialogs/quest_file_dialog.tscn")
 const QuestConfirmationDialogScene = preload("../editor/dialogs/quest_confirmation_dialog.tscn")
-const ConditionEditorScene = preload("../editor/conditions/condition_editor.tscn")
 const ObjectiveEditorEntryScene = preload("../editor/conditions/objective_editor_entry.tscn")
 
 # Editor Scenes for specific components
@@ -26,7 +46,6 @@ const SyncInputEntryScene = preload("../editor/components/synchronize_input_edit
 const SyncOutputEntryScene = preload("../editor/components/synchronize_output_editor_entry.tscn")
 const SyncConditionEditorScene = preload("../editor/conditions/synchronize_condition_editor.tscn")
 const SimpleConditionEntryScene = preload("../editor/components/simple_condition_entry.tscn")
-const AdvancedConditionEditorScene = preload("../editor/conditions/condition_editor.tscn")
 
 # ==============================================================================
 # Strings, Paths & Identifiers

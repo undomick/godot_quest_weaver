@@ -1,6 +1,6 @@
 # res://addons/quest_weaver/systems/managers/quest_state_persistence_manager.gd
 class_name QuestStatePersistenceManager
-extends Object
+extends RefCounted
 
 ## Collects the entire state of the quest system and packs it into a serializable Dictionary.
 func save_state(controller: QuestController) -> Dictionary:

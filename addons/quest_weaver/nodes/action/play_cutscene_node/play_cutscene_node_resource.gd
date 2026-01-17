@@ -28,9 +28,6 @@ func get_description() -> String:
 func get_icon() -> Texture2D:
 	return preload("res://addons/quest_weaver/assets/icons/play.svg")
 
-func execute(controller):
-	pass
-
 func to_dictionary() -> Dictionary:
 	var data = super.to_dictionary()
 	data["animation_player_path"] = self.animation_player_path

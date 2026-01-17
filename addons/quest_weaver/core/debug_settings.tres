@@ -6,10 +6,10 @@
 script = ExtResource("1_hnwp2")
 active_categories = {
 "Animation": false,
-"Executor": false,
+"Executor": true,
 "Flow": false,
 "Inventory": false,
 "SaveLoad": false,
-"System": false
+"System": true
 }
 metadata/_custom_type_script = "uid://dch25eb2daada"

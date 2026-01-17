@@ -15,9 +15,6 @@ func _init() -> void:
 	if id.is_empty() and conditions.is_empty():
 		add_condition({})
 
-func execute(controller) -> void:
-	pass
-
 func check_all_conditions(context: ExecutionContext) -> bool:
 	if conditions.is_empty():
 		return true

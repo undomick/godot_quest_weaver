@@ -26,8 +26,6 @@ func get_description() -> String:
 func get_icon() -> Texture2D:
 	return preload("res://addons/quest_weaver/assets/icons/start_scope.svg")
 
-func execute(controller): pass
-
 func to_dictionary() -> Dictionary:
 	var data = super.to_dictionary()
 	data["scope_id"] = self.scope_id

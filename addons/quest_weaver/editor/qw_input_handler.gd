@@ -7,9 +7,9 @@ var _editor: QuestWeaverEditor
 var _history: QWEditorHistory
 var _action_handler: QWActionHandler
 var _graph_controller: QuestWeaverGraphController
-var _editor_interface: EditorInterface
+var _editor_interface # Removed type hint 'EditorInterface'
 
-func initialize(p_editor: QuestWeaverEditor, p_history: QWEditorHistory, p_action_handler: QWActionHandler, p_graph_controller: QuestWeaverGraphController, p_editor_interface: EditorInterface):
+func initialize(p_editor: QuestWeaverEditor, p_history: QWEditorHistory, p_action_handler: QWActionHandler, p_graph_controller: QuestWeaverGraphController, p_editor_interface):
 	self._editor = p_editor
 	self._history = p_history
 	self._action_handler = p_action_handler

@@ -38,11 +38,11 @@ static func _load_item_registry_data() -> void:
 	_cached_item_ids.clear()
 	_item_registry_loaded = true # Mark as loaded even if it fails, to prevent retries.
 
-	if not is_instance_valid(QWConstants.Settings) or QWConstants.Settings.item_registry_path.is_empty():
+	if not is_instance_valid(QWConstants.get_settings()) or QWConstants.get_settings().item_registry_path.is_empty():
 		_cached_item_ids.append("!Error: Item Registry path not set!")
 		return
 		
-	var item_registry = ResourceLoader.load(QWConstants.Settings.item_registry_path)
+	var item_registry = ResourceLoader.load(QWConstants.get_settings().item_registry_path)
 	if not is_instance_valid(item_registry):
 		_cached_item_ids.append("!Error: Could not load Item Registry!")
 		return
@@ -63,11 +63,11 @@ static func _load_quest_registry_data() -> void:
 	_cached_quest_ids.clear()
 	_quest_registry_loaded = true # Mark as loaded even if it fails.
 
-	if QWConstants.Settings.quest_registry_path.is_empty() or not ResourceLoader.exists(QWConstants.Settings.quest_registry_path):
+	if QWConstants.get_settings().quest_registry_path.is_empty() or not ResourceLoader.exists(QWConstants.get_settings().quest_registry_path):
 		_cached_quest_ids.append("!Error: Quest Registry path not set!")
 		return
 	
-	var registry: QuestRegistry = ResourceLoader.load(QWConstants.Settings.quest_registry_path, "QuestRegistry", ResourceLoader.CACHE_MODE_REPLACE)
+	var registry: QuestRegistry = ResourceLoader.load(QWConstants.get_settings().quest_registry_path, "QuestRegistry", ResourceLoader.CACHE_MODE_REPLACE)
 	
 	if is_instance_valid(registry):
 		if registry.registered_quest_ids.is_empty():

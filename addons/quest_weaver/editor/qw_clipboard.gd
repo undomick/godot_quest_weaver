@@ -1,7 +1,7 @@
 # res://addons/quest_weaver/editor/qw_clipboard.gd
 @tool
 class_name QWClipboard
-extends Object
+extends RefCounted
 
 ## Manages the entire Copy & Paste logic for the Quest Editor.
 ## Handles deep duplication of nodes and their sub-resources (Conditions, Objectives)

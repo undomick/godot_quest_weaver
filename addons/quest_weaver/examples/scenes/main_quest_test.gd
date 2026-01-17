@@ -63,22 +63,21 @@ func _on_quest_event(event_name: String, _payload: Dictionary) -> void:
 		get_tree().quit()
 
 func _on_old_man_talked() -> void:
-	print("Demo: Interact with Old Man...")
 	var qw_global = _get_global_bus()
-	if qw_global:
+	if qw_global && !qw_global.is_locked:
+		print("Demo: Interact with Old Man...")
 		qw_global.quest_event_fired.emit("interact_old_man", {})
 
 func _on_lady_talked() -> void:
-	print("Demo: Interact with Lady...")
 	var qw_global = _get_global_bus()
-	if qw_global:
+	if qw_global && !qw_global.is_locked:
+		print("Demo: Interact with Lady...")
 		qw_global.quest_event_fired.emit("interact_lady", {})
 
-func _on_kill_nestor() -> void:
-	print("Demo: Nestor was killed!")
-	
+func _on_kill_nestor() -> void:	
 	var qw_global = _get_global_bus()
-	if qw_global:
+	if qw_global && !qw_global.is_locked:
+		print("Demo: Nestor was killed!")
 		qw_global.enemy_was_killed.emit("nestor")
 	
 	old_man_talk_button.disabled = true
@@ -89,11 +88,10 @@ func _on_kill_nestor() -> void:
 	if mq_vbox_container:
 		mq_vbox_container.modulate = Color(0.0, 0.0, 0.0, 0.25)
 
-func _on_kill_lydia() -> void:
-	print("Demo: Lydia was killed")
-	
+func _on_kill_lydia() -> void:	
 	var qw_global = _get_global_bus()
-	if qw_global:
+	if qw_global && !qw_global.is_locked:
+		print("Demo: Lydia was killed")
 		qw_global.enemy_was_killed.emit("lydia")
 	
 	old_man_kill_button.disabled = true
@@ -105,10 +103,9 @@ func _on_kill_lydia() -> void:
 		mq_vbox_container_2.modulate = Color(0.0, 0.0, 0.0, 0.25)
 
 func _on_collect_item(item_id: String, amount: int) -> void:
-	print("Demo: Player collect %d x %s" % [amount, item_id])
-	
 	if is_instance_valid(inventory_controller):
 		inventory_controller.give_item(item_id, amount)
+		print("Demo: Player collect %d x %s" % [amount, item_id])
 
 func _on_journal_button_pressed() -> void:
 	quest_log_ui.visible = true

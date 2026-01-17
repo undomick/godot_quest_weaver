@@ -24,11 +24,6 @@ func get_icon() -> Texture2D:
 func determine_default_size() -> QWNodeSizes.Size:
 	return QWNodeSizes.Size.SMALL
 
-# This node does nothing at runtime, so we provide an empty execute function.
-func execute(controller) -> void:
-	#controller.complete_node(self)
-	pass
-
 func get_editor_summary() -> String:
 	if text.is_empty():
 		return "(Empty Comment)"

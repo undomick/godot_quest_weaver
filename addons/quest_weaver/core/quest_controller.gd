@@ -12,7 +12,7 @@ signal quest_data_changed(quest_id: String)
 var _timer_manager: QuestTimerManager
 var _sync_manager: QuestSyncManager
 var _event_manager: QuestEventManager
-var _scope_manager: QuestScopeManager # NEU: Scope Manager
+var _scope_manager: QuestScopeManager
 var _persistence_manager: QuestStatePersistenceManager
 var _execution_context: ExecutionContext
 var _inventory_adapter: QuestInventoryAdapterBase = null
@@ -29,7 +29,7 @@ var _node_definitions: Dictionary = {}
 var _node_connections: Dictionary = {}
 var _active_nodes: Dictionary = {}
 var _completed_nodes: Dictionary = {}
-var _executors: Dictionary = {}
+#var _executors: Dictionary = {}
 var _node_registry: NodeTypeRegistry
 
 
@@ -53,9 +53,12 @@ func _get_logger() -> QWLogger:
 		
 	return null
 
-
-func _ready() -> void:
+func _ready() -> void:	
 	await get_tree().process_frame
+	
+	var global_bus = get_tree().root.get_node_or_null("QuestWeaverGlobal")
+	if is_instance_valid(global_bus):
+		global_bus.register_controller(self)
 	
 	var services = _get_services()
 	if services:
@@ -63,12 +66,64 @@ func _ready() -> void:
 	
 	_initialize_dependencies_and_start()
 
+func _notification(what):
+	if what == NOTIFICATION_EXIT_TREE:
+		_on_exit_cleanup()
+
+func _on_exit_cleanup() -> void:
+	# 1. Stop active processes in managers
+	if is_instance_valid(_timer_manager):
+		_timer_manager.clear_all_timers()
+	
+	if is_instance_valid(_sync_manager):
+		_sync_manager.clear()
+		
+	if is_instance_valid(_event_manager):
+		_event_manager.clear()
+		
+	if is_instance_valid(_scope_manager):
+		_scope_manager.clear()
+
+	# 2. Release Manager references
+	_timer_manager = null
+	_sync_manager = null
+	_event_manager = null
+	_scope_manager = null
+	_persistence_manager = null
+	
+	# 3. Break Circular References
+	# The ExecutionContext holds a reference to this Controller. 
+	# Nullifying it here allows the Context to be freed.
+	_execution_context = null 
+	
+	# 4. Release Node Type Registry
+	_node_registry = null
+	
+	# 5. Clear External Dependencies
+	_inventory_adapter = null
+	_presentation_manager = null
+	_logger = null
+	
+	# 6. Clear Data Structures
+	# This releases references to specific Node Resources stored in dictionaries.
+	_quest_node_map.clear()
+	_node_to_context_map.clear()
+	_quest_id_to_context_node_map.clear()
+	_active_quests.clear()
+	_node_definitions.clear()
+	_node_connections.clear()
+	_active_nodes.clear()
+	_completed_nodes.clear()
+	
+	# 7. Clean up static references in singletons
+	QWConstants.clear_static_references()
+
 func _initialize_dependencies_and_start() -> void:
 	_initialize_managers()
 	_register_executors()
 	_initialize_inventory_adapter()
 	_initialize_quest_graphs()
-	_scope_manager.initialize_scope_definitions(_node_definitions, _node_connections) # NEU: Scope Manager init
+	_scope_manager.initialize_scope_definitions(_node_definitions, _node_connections)
 	_connect_global_signals()
 	
 	var services = _get_services()
@@ -85,7 +140,7 @@ func _initialize_managers():
 	_timer_manager = QuestTimerManager.new(self)
 	_sync_manager = QuestSyncManager.new(self)
 	_event_manager = QuestEventManager.new(self)
-	_scope_manager = QuestScopeManager.new(self) # NEU: Scope Manager
+	_scope_manager = QuestScopeManager.new(self)
 	
 	_logger = QWLogger.new()
 	_logger.initialize()
@@ -101,66 +156,41 @@ func _initialize_managers():
 
 func _register_executors():
 	_node_registry = NodeTypeRegistry.new()
-	_node_registry._build_lookup_tables()
+	# initialization happens automatically in _init of Registry now
 	
 	if not is_instance_valid(_node_registry):
 		push_error("QuestController: Could not load NodeTypeRegistry!")
-		return
-	
-	for type_info in _node_registry.node_types:
-		if not is_instance_valid(type_info) or not is_instance_valid(type_info.node_script):
-			continue
-		var script_path = type_info.node_script.resource_path
-		if script_path.is_empty(): continue
-		var executor_script = null
-		if not type_info.executor_script_path.is_empty() and ResourceLoader.exists(type_info.executor_script_path):
-			executor_script = load(type_info.executor_script_path)
-		_executors[script_path] = executor_script.new() if is_instance_valid(executor_script) else NodeExecutor.new()
 
 func _initialize_quest_graphs() -> void:
-	var logger = _logger # Access local logger directly
+	var logger = _logger
+	if not is_instance_valid(logger): return
+
+	logger.log("Flow", "Initializing quest graphs...")
 	
-	if not is_instance_valid(logger): return # Safety check
+	_load_auto_start_graphs()
 
-	logger.log("Flow", "Initializing quest graphs from Editor Session Data...")
+	if not Engine.is_editor_hint():
+		logger.log("Flow", "Skipping editor session data load in exported build.")
+		return 
+
+	var settings = QWConstants.get_settings()
+	if not is_instance_valid(settings): return
+
+	var paths_to_load: Array[String] = []
+	var editor_data_path = settings.editor_data_path
 	
-	if not is_instance_valid(QWConstants.Settings):
-		push_error("[QuestController] CRITICAL: Could not load QuestWeaverSettings.tres.")
-		return
-
-	var editor_data_path = QWConstants.Settings.editor_data_path
-	if editor_data_path.is_empty() or not ResourceLoader.exists(editor_data_path):
-		# It's okay if it doesn't exist on first run
-		return
-
-	var editor_data: QuestEditorData = ResourceLoader.load(editor_data_path, "QuestEditorData", ResourceLoader.CACHE_MODE_REPLACE)
-	if not is_instance_valid(editor_data):
-		return
-
-	var paths_to_load: Array[String] = editor_data.open_files
+	if editor_data_path and ResourceLoader.exists(editor_data_path):
+		var editor_data: QuestEditorData = ResourceLoader.load(editor_data_path, "QuestEditorData", ResourceLoader.CACHE_MODE_REPLACE)
+		if is_instance_valid(editor_data):
+			for path in editor_data.open_files:
+				if path is String and not path.is_empty():
+					paths_to_load.append(path)
 	
-	if paths_to_load.is_empty():
-		logger.warn("Flow", "No quests are listed in the 'open_files' array. No quests will be loaded.")
-	else:
-		logger.log("Flow", "Found %d quest(s) listed in 'open_files' to load." % paths_to_load.size())
-
 	for graph_path in paths_to_load:
-		if graph_path.is_empty() or not FileAccess.file_exists(graph_path):
+		if not FileAccess.file_exists(graph_path):
 			continue
 		
-		var file = FileAccess.open(graph_path, FileAccess.READ)
-		if file == null:
-			continue
-			
-		var graph_data_dictionary: Dictionary = file.get_var(true)
-		file.close()
-
-		if not graph_data_dictionary is Dictionary:
-			continue
-			
-		var graph_res = QuestGraphResource.new()
-		graph_res.from_dictionary(graph_data_dictionary)
-		
+		var graph_res = ResourceLoader.load(graph_path, "QuestGraphResource")
 		if is_instance_valid(graph_res):
 			graph_res.resource_path = graph_path 
 			_load_graph_data(graph_res)
@@ -169,7 +199,7 @@ func _initialize_quest_graphs() -> void:
 
 func _initialize_inventory_adapter():
 	var logger = _logger
-	var adapter_path = QWConstants.Settings.inventory_adapter_script
+	var adapter_path = QWConstants.get_settings().inventory_adapter_script
 	
 	if adapter_path and not adapter_path.is_empty() and ResourceLoader.exists(adapter_path):
 		var adapter_script = load(adapter_path)
@@ -207,6 +237,40 @@ func _connect_global_signals() -> void:
 
 # --- PUBLIC API & CORE LOGIC ---
 
+func force_skip_node(node_id: String) -> void:
+	if not _active_nodes.has(node_id): return
+	
+	var node = _active_nodes[node_id]
+	var logger = _get_logger()
+	if logger: logger.log("System", "Force skipping node: %s" % node_id)
+
+	# 1. Handle specific cleanup logic (Stop Audio, Close UI, Jump Anim)
+	if node is ShowUIMessageNodeResource:
+		if is_instance_valid(_presentation_manager):
+			# We assume PresentationManager has a method to force close
+			_presentation_manager.force_close_current()
+			
+	elif node is PlayCutsceneNodeResource:
+		var root = get_tree().get_root()
+		var anim_player = root.get_node_or_null(node.animation_player_path)
+		if is_instance_valid(anim_player) and anim_player.is_playing():
+			# Jump to end of animation instantly
+			anim_player.seek(anim_player.current_animation_length, true)
+			anim_player.stop()
+
+	# 2. Unlock Global State
+	var global_bus = get_tree().root.get_node_or_null("QuestWeaverGlobal")
+	if is_instance_valid(global_bus):
+		global_bus.unlock_interaction(node_id)
+
+	# 3. Complete the node logic (Trigger output ports)
+	# For Cutscenes/UI, we usually want to trigger the "Success/Finish" port.
+	if node is PlayCutsceneNodeResource or node is ShowUIMessageNodeResource:
+		# Assuming port 0 is the default continuation or we check logic
+		complete_node(node)
+	else:
+		complete_node(node)
+
 func reset_all_graphs_and_quests():
 	var logger = _logger
 	if is_instance_valid(logger):
@@ -217,13 +281,13 @@ func reset_all_graphs_and_quests():
 	_timer_manager.clear_all_timers()
 	_sync_manager.clear()
 	_event_manager.clear()
-	_scope_manager.clear() # Scope Manager
+	_scope_manager.clear()
 	_active_quests.clear()
 
 func start_all_loaded_graphs():
 	_ensure_execution_context_exists()
 	
-	var settings = QWConstants.Settings
+	var settings = QWConstants.get_settings()
 	if settings and not settings.auto_start_quests.is_empty():
 		for raw_path in settings.auto_start_quests:
 			if raw_path.is_empty(): continue
@@ -235,11 +299,48 @@ func start_all_loaded_graphs():
 				if id != -1:
 					final_path = ResourceUID.get_id_path(id)
 			
-			if QWConstants.Settings.auto_start_quests.size() > 0:
+			if QWConstants.get_settings().auto_start_quests.size() > 0:
 				var logger = _get_logger()
 				if logger:
 					logger.log("System", "Auto-starting: " + final_path)
 			_start_specific_graph_entry(final_path)
+
+## Loads the list of auto-start quests defined in settings.
+func _load_auto_start_graphs() -> void:
+	var settings = QWConstants.get_settings()
+	if not is_instance_valid(settings):
+		return
+
+	var paths_to_load: Array[String] = []
+
+	# Use explicit loop to bypass Array[String] vs Array type mismatch error on loaded resources
+	for raw_path in settings.auto_start_quests:
+		if not raw_path is String or raw_path.is_empty():
+			continue
+			
+		var final_path = raw_path
+
+		if raw_path.begins_with("uid://"):
+			var uid_int = ResourceLoader.get_resource_uid(raw_path) 
+			if uid_int != -1:
+				final_path = ResourceUID.get_id_path(uid_int) 
+			
+		if not final_path.is_empty():
+			paths_to_load.append(final_path)
+	
+	for graph_path in paths_to_load:
+		if not ResourceLoader.exists(graph_path):
+			push_error("QuestController: Auto-start graph not found at '%s'." % graph_path)
+			continue
+		
+		# Load the graph resource and ensure its path is set for the internal maps
+		var graph_res = ResourceLoader.load(graph_path, "QuestGraphResource")
+		if is_instance_valid(graph_res):
+			graph_res.resource_path = graph_path 
+			_load_graph_data(graph_res) # This method puts definitions into _quest_node_map, etc.
+		
+	if is_instance_valid(_logger):
+		_logger.log("Flow", "Loaded %d auto-start graph definitions." % paths_to_load.size())
 
 func start_quest(node_data: QuestContextNodeResource) -> void:
 	var logger = _logger
@@ -271,7 +372,15 @@ func start_quest(node_data: QuestContextNodeResource) -> void:
 		
 		push_warning("QuestWeaver: Cannot start quest '%s'. It is already registered with status: %s." % [quest_id, status_str])
 
-func start_sub_graph(graph_path: String):
+func start_quest_by_id(quest_id: String) -> void:
+	if _quest_id_to_context_node_map.has(quest_id):
+		var context_node = _quest_id_to_context_node_map[quest_id]
+		_activate_node(context_node)
+	else:
+		if is_instance_valid(_logger):
+			_logger.warn("System", "start_quest_by_id: No Quest Context found for ID '%s'." % quest_id)
+
+func start_sub_graph(graph_path: String) -> void:
 	if ResourceLoader.exists(graph_path):
 		var graph_res = ResourceLoader.load(graph_path)
 		_load_graph_data(graph_res)
@@ -478,7 +587,7 @@ func complete_node(node: GraphNodeResource) -> void:
 	node.status = GraphNodeResource.Status.COMPLETED
 	
 	if node is TaskNodeResource:
-		var executor = _executors.get(node.get_script())
+		var executor = _node_registry.get_executor_for_node(node)
 		if executor and executor.has_method("cleanup_listeners"):
 			executor.cleanup_listeners(_execution_context, node)
 	
@@ -586,14 +695,11 @@ func _activate_node(node_definition: GraphNodeResource, from_input_port: int = 0
 	
 	node_instance.set_meta("activated_on_port_hack", from_input_port)
 	
-	var script_path = node_instance.get_script().resource_path
-	var executor = _executors.get(script_path)
-
+	var executor: NodeExecutor = _node_registry.get_executor_for_node(node_instance)
 	if executor:
-		logger.log("Flow", "    - Found Executor: '%s'" % executor.get_script().resource_path.get_file())
 		executor.execute(_execution_context, node_instance)
 	else:
-		logger.log("Flow", "    - No specific Executor found for '%s'. Using Default behavior (Complete & Trigger Port 0)." % node_definition.id)
+		logger.log("Flow", "    - No specific Executor found. Using Default behavior.")
 		complete_node(node_instance)
 
 func _mark_node_as_complete(node: GraphNodeResource) -> void:
@@ -604,7 +710,7 @@ func _mark_node_as_complete(node: GraphNodeResource) -> void:
 	node.status = GraphNodeResource.Status.COMPLETED
 	
 	if node is TaskNodeResource:
-		var executor = _executors.get(node.get_script())
+		var executor = _node_registry.get_executor_for_node(node)
 		if executor and executor.has_method("cleanup_listeners"):
 			executor.cleanup_listeners(_execution_context, node)
 	
@@ -727,8 +833,10 @@ func _check_item_collect_objectives():
 	logger.log("Inventory", "_check_item_collect_objectives called!")
 	
 	var listening_item_ids = _execution_context.item_objective_listeners.keys()
-	
 	for item_id in listening_item_ids:
+		if not _execution_context.item_objective_listeners.has(item_id):
+			continue
+		
 		var current_amount_in_inventory = _inventory_adapter.count_item(item_id)
 		logger.log("Inventory", "  -> Checking for item '%s'. Player has: %d" % [item_id, current_amount_in_inventory])
 		
@@ -791,7 +899,6 @@ func _trigger_next_nodes_from_port(from_node: GraphNodeResource, from_port_index
 				logger.log("Flow", "    - Found connection to '%s'. Activating it." % next_node_id)
 				_activate_node(next_node_def, to_port)
 				found_connection = true
-				# In most cases, a port connects to only one other node.
 				break 
 
 	if not found_connection:
@@ -819,7 +926,7 @@ func _cleanup_graph_instances(graph_path: String) -> void:
 			_timer_manager.remove_timer(node_id)
 			
 		if node_instance is TaskNodeResource:
-			var executor = _executors.get(node_instance.get_script())
+			var executor = _node_registry.get_executor_for_node(node_instance)
 			if executor and executor.has_method("cleanup_listeners"):
 				executor.cleanup_listeners(_execution_context, node_instance)
 
@@ -827,6 +934,7 @@ func _cleanup_graph_instances(graph_path: String) -> void:
 		
 		if is_instance_valid(logger):
 			logger.log("Flow", "  - Force-closed node: %s" % node_id)
+
 # Helper function for ScopeManager to mark node complete without checking listeners or cleanup
 func _mark_node_as_logically_complete(node: GraphNodeResource) -> void:
 	var logger = _logger

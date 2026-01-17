@@ -19,6 +19,7 @@ var data_manager: QWGraphData
 var editor_scale: float = 1.0
 var is_connecting := false
 var _connection_start_data: Dictionary
+var _is_loading_graph: bool = false
 var _is_rebuilding_graph := false
 var _nodes_to_be_ready: int = 0
 var _graph_resource_for_connection: QuestGraphResource = null
@@ -41,10 +42,13 @@ func initialize(p_node_registry: NodeTypeRegistry, p_data_manager: QWGraphData, 
 ## PUBLIC API ##
 
 func display_graph(graph_resource: QuestGraphResource):
+	_is_loading_graph = true
 	await _rebuild_visual_graph(graph_resource)
 	if is_instance_valid(graph_resource):
-		call_deferred("set_scroll_offset", graph_resource.editor_scroll_offset)
-		call_deferred("set_zoom", graph_resource.editor_zoom)
+		set_zoom(graph_resource.editor_zoom)
+		await get_tree().process_frame
+		set_scroll_offset(graph_resource.editor_scroll_offset)
+	_is_loading_graph = false
 
 func update_node_ports(graph_resource: QuestGraphResource, node_id: String):
 	if _is_rebuilding_graph: return
@@ -250,6 +254,7 @@ func _gui_input(event: InputEvent) -> void:
 		call_deferred("_emit_selection_finished")
 
 func _emit_view_changed_signal():
+	if _is_loading_graph: return
 	if is_instance_valid(self):
 		view_changed.emit(scroll_offset, zoom)
 
@@ -407,7 +412,7 @@ func _apply_node_decorations(visual_node: GraphElement, node_data: GraphNodeReso
 	if not is_instance_valid(visual_node) or not is_instance_valid(node_data):
 		return
 	
-	var category_resource = QWConstants.GRAPH_NODE_CATEGORY
+	var category_resource = QWConstants.get_graph_node_category()
 	var category_color: Color = Color.DARK_GRAY
 	
 	if category_resource and category_resource.categories.has(node_data.category):

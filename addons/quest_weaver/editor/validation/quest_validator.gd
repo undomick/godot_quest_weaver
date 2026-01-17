@@ -11,8 +11,8 @@ func validate_graph(graph: QuestGraphResource) -> Array[ValidationResult]:
 	var results: Array[ValidationResult] = []
 	if not is_instance_valid(graph): return results
 
-	_item_registry = _load_resource(QWConstants.Settings.item_registry_path)
-	_quest_registry = _load_resource(QWConstants.Settings.quest_registry_path)
+	_item_registry = _load_resource(QWConstants.get_settings().item_registry_path)
+	_quest_registry = _load_resource(QWConstants.get_settings().quest_registry_path)
 
 	results.append_array(_check_for_orphan_nodes(graph))
 	results.append_array(_check_for_cycles(graph))

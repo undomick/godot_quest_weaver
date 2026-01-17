@@ -13,11 +13,6 @@ var status: Status = Status.INACTIVE
 @export var input_ports: Array[String] = ["In"]
 @export var output_ports: Array[String] = ["Out"]
 
-## This function is called by the QuestController when the node becomes active.
-func execute(controller) -> void:
-	push_warning("Executing base method for node '%s'. This should be overridden in the derived class." % id)
-	controller.complete_node(self)
-
 ## Provides a brief, human-readable summary for display in the graph editor.
 func get_editor_summary() -> String:
 	return ""

@@ -52,9 +52,6 @@ func get_description() -> String:
 func get_icon() -> Texture2D:
 	return preload("res://addons/quest_weaver/assets/icons/objective.svg")
 
-func execute(controller):
-	pass
-
 func add_objective(payload: Dictionary):
 	if payload.has("objective_instance"):
 		var objective_instance = payload.get("objective_instance")

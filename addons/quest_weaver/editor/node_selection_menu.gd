@@ -43,7 +43,7 @@ func _refresh_list(filter: String) -> void:
 	_filtered_indices.clear()
 
 	var filter_lower = filter.to_lower()
-	var category_resource = QWConstants.GRAPH_NODE_CATEGORY
+	var category_resource = QWConstants.get_graph_node_category()
 	var icon_size = Vector2i(16, 16) 
 
 	for i in range(_all_node_types.size()):

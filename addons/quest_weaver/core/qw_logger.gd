@@ -1,6 +1,6 @@
 # res://addons/quest_weaver/core/qw_logger.gd
 class_name QWLogger
-extends Node
+extends RefCounted
 
 var _active_categories: Dictionary = {}
 

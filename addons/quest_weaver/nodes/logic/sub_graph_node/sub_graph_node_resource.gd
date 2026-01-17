@@ -25,9 +25,6 @@ func get_description() -> String:
 func get_icon() -> Texture2D:
 	return preload("res://addons/quest_weaver/assets/icons/subgraph.svg")
 
-func execute(_controller):
-	pass
-
 func to_dictionary() -> Dictionary:
 	var data = super.to_dictionary()
 	data["quest_graph_path"] = self.quest_graph_path

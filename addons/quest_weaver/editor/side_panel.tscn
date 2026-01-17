@@ -1,9 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://can4p1dv5xuot"]
+[gd_scene load_steps=5 format=3 uid="uid://can4p1dv5xuot"]
 
 [ext_resource type="Script" uid="uid://cwk36v7yrmvwc" path="res://addons/quest_weaver/editor/side_panel.gd" id="1_5q1rv"]
+[ext_resource type="Texture2D" uid="uid://kmhuhpghbji1" path="res://addons/quest_weaver/assets/icons/save_all.svg" id="2_r5pjp"]
 [ext_resource type="Texture2D" uid="uid://1r0xlayw44ce" path="res://addons/quest_weaver/assets/icons/share_love.svg" id="2_rn2th"]
 
-[sub_resource type="DPITexture" id="DPITexture_giafe"]
+[sub_resource type="DPITexture" id="DPITexture_r5pjp"]
 _source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#ff5d5d\" d=\"M2 1v8.586l1.293-1.293a1 1 0 0 1 1.414 0L7 10.587l2.293-2.293a1 1 0 0 1 1.414 0L13 10.586l1-1V6H9V1H2zm8 0v4h4zm-6 9.414-2 2V15h12v-2.586l-.293.293a1 1 0 0 1-1.414 0L10 10.414l-2.293 2.293a1 1 0 0 1-1.414 0L4 10.414z\"/></svg>
 "
 
@@ -35,22 +36,42 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(16, 24)
 layout_mode = 2
-icon = SubResource("DPITexture_giafe")
+tooltip_text = "Create a new quest in the Quest Folder"
+icon = SubResource("DPITexture_r5pjp")
 flat = true
 
 [node name="OpenButton" type="Button" parent="Toolbar"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(16, 24)
 layout_mode = 2
-icon = SubResource("DPITexture_giafe")
+tooltip_text = "Open quest"
+icon = SubResource("DPITexture_r5pjp")
+flat = true
+
+[node name="OpenDirButton" type="Button" parent="Toolbar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(16, 24)
+layout_mode = 2
+tooltip_text = "Open all quests in a folder"
+icon = SubResource("DPITexture_r5pjp")
 flat = true
 
 [node name="SaveButton" type="Button" parent="Toolbar"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(16, 24)
 layout_mode = 2
+tooltip_text = "Save Selected Quest"
 disabled = true
-icon = SubResource("DPITexture_giafe")
+icon = SubResource("DPITexture_r5pjp")
+flat = true
+
+[node name="SaveAllButton" type="Button" parent="Toolbar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(16, 24)
+layout_mode = 2
+tooltip_text = "Save All Quests"
+disabled = true
+icon = ExtResource("2_r5pjp")
 flat = true
 
 [node name="Spacer" type="Control" parent="Toolbar"]
@@ -60,45 +81,75 @@ size_flags_horizontal = 3
 [node name="DonateButton" type="Button" parent="Toolbar"]
 unique_name_in_owner = true
 layout_mode = 2
+tooltip_text = "Buy me a Coffee!"
 icon = ExtResource("2_rn2th")
 
 [node name="DocsButton" type="Button" parent="Toolbar"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(16, 24)
 layout_mode = 2
-icon = SubResource("DPITexture_giafe")
+tooltip_text = "Wiki"
+icon = SubResource("DPITexture_r5pjp")
 flat = true
 
 [node name="Bookmarks" type="VSplitContainer" parent="."]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Bookmarks"]
+[node name="PanelContainer" type="PanelContainer" parent="Bookmarks"]
 layout_mode = 2
 
-[node name="FilterEdit" type="LineEdit" parent="Bookmarks/VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Bookmarks/PanelContainer"]
+layout_mode = 2
+
+[node name="FilterEdit" type="LineEdit" parent="Bookmarks/PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-right_icon = SubResource("DPITexture_giafe")
+right_icon = SubResource("DPITexture_r5pjp")
 
-[node name="List" type="ItemList" parent="Bookmarks/VBoxContainer"]
+[node name="QuestTree" type="Tree" parent="Bookmarks/PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 allow_rmb_select = true
 
+[node name="QuickCreateEdit" type="LineEdit" parent="Bookmarks/PanelContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 0
+placeholder_text = "Type in new Quest Name"
+
 [node name="ContextMenu" type="PopupMenu" parent="."]
 unique_name_in_owner = true
-item_count = 6
-item_0/text = "Close"
+item_count = 15
+item_0/text = "Open / Activate"
 item_0/id = 0
-item_1/text = "Close All Others"
-item_1/id = 1
-item_2/text = "Close All"
-item_2/id = 2
-item_3/id = -1
-item_3/separator = true
-item_4/text = "Save"
-item_4/id = 3
-item_5/text = "Save All"
-item_5/id = 4
+item_1/id = -1
+item_1/separator = true
+item_2/text = "Save"
+item_2/id = 1
+item_3/text = "Save All"
+item_3/id = 2
+item_4/id = -1
+item_4/separator = true
+item_5/text = "Close"
+item_5/id = 3
+item_6/text = "Close Other Files"
+item_6/id = 4
+item_7/text = "Close All Files"
+item_7/id = 5
+item_8/id = -1
+item_8/separator = true
+item_9/text = "Close Category"
+item_9/id = 10
+item_10/text = "Close Other Categories"
+item_10/id = 11
+item_11/id = -1
+item_11/separator = true
+item_12/text = "Show in FileSystem"
+item_12/id = 20
+item_13/text = "Copy Path"
+item_13/id = 21
+item_14/text = "Copy UID"
+item_14/id = 22

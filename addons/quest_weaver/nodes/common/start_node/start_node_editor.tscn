@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://dontcrkx6fv44"]
+
+[ext_resource type="Script" uid="uid://csf5k3pl4vg3q" path="res://addons/quest_weaver/nodes/common/start_node/start_node_editor.gd" id="1_script"]
+
+[node name="StartNodeEditor" type="VBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+size_flags_horizontal = 3
+script = ExtResource("1_script")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "Side Panel Category"
+
+[node name="CategoryEdit" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Uncategorized"

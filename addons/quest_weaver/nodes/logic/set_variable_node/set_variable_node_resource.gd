@@ -44,9 +44,6 @@ func get_description() -> String:
 func get_icon() -> Texture2D:
 	return preload("res://addons/quest_weaver/assets/icons/setvar.svg")
 
-func execute(_controller):
-	pass
-
 # Helper function to parse the string into a variant (same as in ConditionResource).
 func _parse_string_to_variant(text: String) -> Variant:
 	var parsed_value: Variant = text

@@ -1,6 +1,6 @@
 # res://addons/quest_weaver/systems/managers/quest_event_manager.gd
 class_name QuestEventManager
-extends Object
+extends RefCounted
 
 ## Manages the registration and triggering of global quest events.
 

@@ -32,7 +32,8 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 		if is_instance_valid(node_instance):
 			# Cleanup listeners (Tasks, Events)
 			if node_instance is TaskNodeResource:
-				var executor = controller._executors.get(node_instance.get_script())
+				var registry = controller._node_registry
+				var executor = registry.get_executor_for_node(node_instance)
 				if executor and executor.has_method("cleanup_listeners"):
 					executor.cleanup_listeners(context, node_instance)
 			if node_instance is EventListenerNodeResource:

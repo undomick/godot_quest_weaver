@@ -12,6 +12,17 @@ var logger: QWLogger = null
 var _game_state_instance: Node = null
 
 
+func _notification(what):
+	if what == NOTIFICATION_EXIT_TREE:
+		_on_exit_cleanup()
+
+func _on_exit_cleanup():
+	QWConstants.clear_static_references()
+	quest_controller = null
+	presentation_manager = null
+	logger = null
+	_game_state_instance = null
+
 func register_quest_controller(qc: QuestController) -> void:
 	if quest_controller == null:
 		quest_controller = qc
