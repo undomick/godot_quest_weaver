@@ -12,8 +12,8 @@ Stop juggling dictionaries and hard-coded logic. Start weaving your story, one n
 
 ## Table of Contents
 
--   [Core Features](#core-features)
--   [Why Use Quest Weaver?](#why-use-quest-weaver)
+-   [Why Use Quest Weaver?](#why-qw)
+-   [Core Features](#features)
 -   [A Tour of the Node System](#a-tour-of-the-node-system)
 	-   [Flow Control](#flow-control)
 	-   [Logic & Game State](#logic--game-state)
@@ -23,23 +23,39 @@ Stop juggling dictionaries and hard-coded logic. Start weaving your story, one n
 -   [Getting Started](#getting-started)
 -   [License](#license)
 
-## Core Features
+---
 
-*   **Visual, Node-Based Editor:** Design and visualize your quest logic with an intuitive graph editor. No more getting lost in complex scripts.
-*   **Powerful Flow Control:** Create branching narratives with conditional logic (`Branch`), run tasks in parallel (`Parallel`), introduce randomness (`Random`), or wait for multiple quest lines to converge (`Synchronize`).
-*   **Dynamic Objectives:** Craft engaging tasks for the player, from collecting items and killing enemies to interacting with specific objects and visiting locations.
-*   **Seamless Game State Integration:** Read and modify game variables directly from your quests, allowing for truly dynamic and reactive storytelling. For example, unlock a door only if the player has `strength > 10`.
-*   **Event-Driven Logic:** Fire global events from your quests to trigger anything in your game world, or have quests pause and listen for events fired *from* your game world.
-*   **Integrated Validator:** Catch logical errors like dead-end branches or infinite loops before they ever make it into your game.
-*   **Runtime Debugger:** See your quest graphs execute in real-time as you play, with live highlighting of active and completed nodes.
-*   **Extensible by Design:** A clean adapter-based system makes it easy to connect Quest Weaver to your existing inventory, UI, or other core game systems without modifying the plugin's code.
+## <a id="why-qw"></a>🚀 Why use Quest Weaver?
 
-## Why Use Quest Weaver?
+Most quest systems suffer from two major problems: they are rigid (hard to reuse), and they break your save games whenever you update a quest. Quest Weaver solves both.
 
-Quest Weaver is built on a simple philosophy: **empower the designer without limiting the developer.**
+*   **Production-Ready Architecture:** Built on a strict **Blueprint & Instance** pattern. The quest files (`.quest`) are stateless blueprints. The runtime logic uses lightweight Instances. This ensures high performance and stability.
+*   **Save Game Stability:** We separate logic from data. Save files only store pure JSON-compatible state (variables & progress). You can move nodes, rename descriptions, or change logic in the editor **without breaking existing save games**.
+*   **Reusability (Templates):** Don't write the same "Fetch Quest" ten times. Write it once, use variables like `{target}` and `{amount}`, and instantiate it infinitely with different parameters.
 
--   For **Writers and Designers**, it provides a visual canvas to build stories and quests as fast as you can imagine them. You can test different narrative paths, add conditional dialogue, and manage complex quest states without writing a single line of code.
--   For **Programmers**, it offers a robust, decoupled framework that cleanly separates quest logic from your core game code. Integrating your existing systems is straightforward, and the modular node-based architecture makes it easy to add custom nodes for project-specific needs.
+---
+
+## <a id="features"></a>✨ Core Features
+
+### 🧠 Logic & Flow
+*   **Visual Graph Editor:** Design branching narratives using an intuitive Drag & Drop interface.
+*   **Flexible Logic Nodes:** Use **Branches**, **Random Choices**, **Parallel Execution**, and **Synchronization** (Wait for All/Any) to create complex flows.
+*   **Sub-Graphs:** Organize huge stories by nesting quests inside other quests. Keep your main graph clean!
+*   **Scopes & Loops:** Create repeatable logic sections (e.g. "Try again" loops) with built-in execution limits.
+
+### 🛠️ Parametrization & Templates
+*   **Dynamic Variables:** Inject parameters when starting a quest (`start_quest("hunt", {"target": "Wolf"})`).
+*   **Text Replacement:** Use placeholders in titles, descriptions, and messages. `{npc_name}` automatically becomes "Gandalf" at runtime.
+*   **Dynamic Logic:** Even logic nodes can use variables. Check for `{required_amount}` items instead of a hardcoded number.
+
+### 🔍 Debugging & Validation
+*   **Live Debugger:** Watch your quest flow **in real-time**. Active nodes pulse orange, completed nodes turn green, and failed nodes turn red inside the editor while your game runs.
+*   **Static Validator:** The built-in validator analyzes your graphs for dead ends, infinite loops, or missing references before you even run the game. click on an error to jump directly to the node.
+
+### 🔗 Integration
+*   **Inventory Adapter:** Agnostic design. Connect your existing inventory system via a simple Adapter script to allow "Give/Take/Check Item" nodes.
+*   **Localization:** Built-in **Key Scanner**. Scans all your nodes for text and auto-generates/updates a CSV file for Godot's translation system.
+*   **Global Events:** Wait for signals like `enemy_killed` or `location_entered` directly in the graph.
 
 ## A Tour of the Node System
 
