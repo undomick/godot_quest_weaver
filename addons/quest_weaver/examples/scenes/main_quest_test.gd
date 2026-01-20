@@ -8,6 +8,7 @@ extends Node
 # Adventure related stuff
 @onready var quest_log_ui: QuestLogUI = %QuestLogUI
 @onready var journal_button: Button = %JournalButton
+@onready var lang_opt_button: OptionButton = %LangOptButton
 
 # Old Man Nestor
 @onready var mq_vbox_container: VBoxContainer = %MQ_VBoxContainer
@@ -22,7 +23,7 @@ extends Node
 @onready var lady_spare_button: Button = %LadySpareButton
 
 var inventory_controller: Node
-
+var qw_global = null
 
 func _ready() -> void:
 	# We find the inventory controller when the scene starts.
@@ -46,7 +47,7 @@ func _ready() -> void:
 	# Listen to the global quest weaver events.
 	# We use a safe lookup here to prevent errors during plugin installation.
 	# In your own game, you can simply write: QuestWeaverGlobal.quest_event_fired.connect(...)
-	var qw_global = _get_global_bus()
+	qw_global = _get_global_bus()
 	if qw_global:
 		qw_global.quest_event_fired.connect(_on_quest_event)
 
@@ -63,19 +64,16 @@ func _on_quest_event(event_name: String, _payload: Dictionary) -> void:
 		get_tree().quit()
 
 func _on_old_man_talked() -> void:
-	var qw_global = _get_global_bus()
 	if qw_global && !qw_global.is_locked:
 		print("Demo: Interact with Old Man...")
 		qw_global.quest_event_fired.emit("interact_old_man", {})
 
 func _on_lady_talked() -> void:
-	var qw_global = _get_global_bus()
 	if qw_global && !qw_global.is_locked:
 		print("Demo: Interact with Lady...")
 		qw_global.quest_event_fired.emit("interact_lady", {})
 
-func _on_kill_nestor() -> void:	
-	var qw_global = _get_global_bus()
+func _on_kill_nestor() -> void:
 	if qw_global && !qw_global.is_locked:
 		print("Demo: Nestor was killed!")
 		qw_global.enemy_was_killed.emit("nestor")
@@ -89,7 +87,6 @@ func _on_kill_nestor() -> void:
 		mq_vbox_container.modulate = Color(0.0, 0.0, 0.0, 0.25)
 
 func _on_kill_lydia() -> void:	
-	var qw_global = _get_global_bus()
 	if qw_global && !qw_global.is_locked:
 		print("Demo: Lydia was killed")
 		qw_global.enemy_was_killed.emit("lydia")

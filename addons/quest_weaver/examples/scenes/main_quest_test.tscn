@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://bofejnrnhn0ei"]
+[gd_scene load_steps=8 format=3 uid="uid://bofejnrnhn0ei"]
 
 [ext_resource type="Script" uid="uid://m6kbkprnn5ts" path="res://addons/quest_weaver/examples/scenes/main_quest_test.gd" id="1_wqj30"]
+[ext_resource type="Texture2D" uid="uid://b6jrdwqvmqow7" path="res://addons/quest_weaver/examples/assets/bg_winter.jpg" id="2_iuw1t"]
 [ext_resource type="Texture2D" uid="uid://ch3f7x11hbqwr" path="res://addons/quest_weaver/examples/assets/portrait.png" id="2_rh56j"]
 [ext_resource type="Texture2D" uid="uid://dkvqcbmabwlf8" path="res://addons/quest_weaver/examples/assets/portrait2.png" id="3_iuw1t"]
 [ext_resource type="Script" uid="uid://c85xrg7ak35hk" path="res://addons/quest_weaver/examples/scenes/simple_inventory_controller.gd" id="3_s2h8j"]
@@ -9,6 +10,11 @@
 
 [node name="main_quest_test" type="Node"]
 script = ExtResource("1_wqj30")
+
+[node name="BG" type="TextureRect" parent="."]
+offset_right = 1152.0
+offset_bottom = 648.0
+texture = ExtResource("2_iuw1t")
 
 [node name="AdventureMarginContainer" type="MarginContainer" parent="."]
 anchors_preset = 15
@@ -163,6 +169,53 @@ size_flags_horizontal = 4
 size_flags_vertical = 8
 text = "Open Quest Journal
 "
+
+[node name="LanguageMarginContainer" type="MarginContainer" parent="."]
+visible = false
+offset_right = 260.0
+offset_bottom = 50.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+
+[node name="Panel" type="Panel" parent="LanguageMarginContainer"]
+custom_minimum_size = Vector2(250, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="MarginContainer" type="MarginContainer" parent="LanguageMarginContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="LanguageMarginContainer/Panel/MarginContainer"]
+layout_mode = 2
+
+[node name="LangLabel" type="Label" parent="LanguageMarginContainer/Panel/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 2
+text = "Language"
+
+[node name="LangOptButton" type="OptionButton" parent="LanguageMarginContainer/Panel/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+selected = 0
+item_count = 3
+popup/item_0/text = "english"
+popup/item_0/id = 0
+popup/item_1/text = "german"
+popup/item_1/id = 1
+popup/item_2/text = "french"
+popup/item_2/id = 2
 
 [node name="UI" type="CanvasLayer" parent="."]
 unique_name_in_owner = true

@@ -45,7 +45,7 @@ enum LogicOperator { AND, OR }
 @export var sub_conditions: Array[ConditionResource] = []
 
 
-func check(context: Variant) -> bool:
+func check(context: Variant, instance: QuestInstance = null) -> bool:
 	var controller = _get_controller_safely(context)
 	
 	match type:
@@ -60,45 +60,36 @@ func check(context: Variant) -> bool:
 			var adapter = controller._inventory_adapter
 			if not is_instance_valid(adapter) or item_id.is_empty():
 				return false
+			# Resolve potential variables in item_id or amount using instance?
+			# For v1.0 basic, we stick to static IDs, but here is where placeholders would be resolved.
 			return adapter.check_item(item_id, amount)
 			
 		ConditionType.CHECK_QUEST_STATUS:
-			if not is_instance_valid(controller): return false
-			if quest_id.is_empty(): return false
-			
-			var quest_data = controller.get_quest_data(quest_id)
-			if quest_data.is_empty():
-				return expected_status == QWEnums.QuestState.INACTIVE
-			
-			return quest_data.get("status", QWEnums.QuestState.INACTIVE) == expected_status
+			var current_status = controller.get_quest_state(quest_id)
+			#print("[DEBUG] Condition CHECK_QUEST_STATUS: ID='%s' Expected=%d Actual=%d" % [quest_id, expected_status, current_status])
+			return current_status == expected_status
 			
 		ConditionType.CHECK_VARIABLE:
-			if variable_name.is_empty(): return false
+			# Priority: 1. QuestInstance Variable (Local), 2. GameState (Global)
 			var actual_value = null
 			
-			# Try getting variable via Context or fallback to Global State
-			if context is RefCounted and context.get("game_state"): # ExecutionContext
-				if is_instance_valid(context.game_state):
-					actual_value = context.game_state.get_variable(variable_name)
-			elif context is Dictionary and context.has(variable_name):
-				actual_value = context[variable_name]
+			if instance and instance.variables.has(variable_name):
+				actual_value = instance.get_variable(variable_name)
 			else:
-				# Fallback to global state
-				var services = Engine.get_main_loop().root.get_node_or_null("QuestWeaverServices")
-				if services and services.has_method("get_game_state"):
-					var gs = services.get_game_state()
-					if gs: actual_value = gs.get_variable(variable_name)
+				# Fallback to Global State
+				if context is RefCounted and context.get("game_state"):
+					if is_instance_valid(context.game_state):
+						actual_value = context.game_state.get_variable(variable_name)
 			
 			return _compare_values(actual_value, expected_value_string)
 			
 		ConditionType.CHECK_OBJECTIVE_STATUS:
 			if not is_instance_valid(controller): return false
 			if objective_id.is_empty(): return false
-			
-			var actual_status = controller.get_objective_status(objective_id)
-			return actual_status == expected_objective_status
+			return controller.get_objective_status(objective_id) == expected_objective_status
 			
 		ConditionType.CHECK_SYNCHRONIZER:
+			# Context here is the specialized Dictionary passed by SyncManager
 			if context is Dictionary and context.has("sync_inputs_received_array"):
 				var received_array: Array = context["sync_inputs_received_array"]
 				match check_type:
@@ -113,11 +104,11 @@ func check(context: Variant) -> bool:
 			match logic_operator:
 				LogicOperator.AND:
 					for condition in sub_conditions:
-						if not is_instance_valid(condition) or not condition.check(context): return false
+						if not is_instance_valid(condition) or not condition.check(context, instance): return false
 					return true
 				LogicOperator.OR:
 					for condition in sub_conditions:
-						if is_instance_valid(condition) and condition.check(context): return true
+						if is_instance_valid(condition) and condition.check(context, instance): return true
 					return false
 	
 	return false

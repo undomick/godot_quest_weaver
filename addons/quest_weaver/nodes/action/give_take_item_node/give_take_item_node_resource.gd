@@ -13,7 +13,13 @@ enum Action { GIVE, TAKE }
 func _init() -> void:
 	category = "Action" 
 	input_ports = ["In"]
-	output_ports = ["Success", "Failure"]
+	_update_ports_from_data()
+
+func _update_ports_from_data() -> void:
+	if is_terminal:
+		output_ports = []
+	else:
+		output_ports = ["Success", "Failure"]
 
 func get_editor_summary() -> String:
 	var action_text = Action.keys()[action].capitalize()
@@ -54,6 +60,7 @@ func from_dictionary(data: Dictionary):
 	self.item_id = data.get("item_id", "")
 	self.amount = data.get("amount", 1)
 	self.action = data.get("action", Action.GIVE)
+	_update_ports_from_data()
 
 func _validate(_context: Dictionary) -> Array[ValidationResult]:
 	var results: Array[ValidationResult] = []

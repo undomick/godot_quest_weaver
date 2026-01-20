@@ -2,7 +2,7 @@
 class_name ObjectiveNodeExecutor
 extends NodeExecutor
 
-func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
+func execute(context: ExecutionContext, node: GraphNodeResource, _instance: QuestInstance) -> void:
 	var obj_node = node as ObjectiveNodeResource
 	var logger = context.logger
 	
@@ -22,6 +22,7 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 		ObjectiveNodeResource.Action.RESET:
 			target_status = ObjectiveResource.Status.ACTIVE
 	
+	# This affects objectives globally (in any active quest instance)
 	context.quest_controller.set_manual_objective_status(obj_node.target_objective_id, target_status)
 	
 	context.quest_controller.complete_node(node)

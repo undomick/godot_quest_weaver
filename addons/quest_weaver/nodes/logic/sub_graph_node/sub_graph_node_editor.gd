@@ -8,11 +8,13 @@ signal dive_in_requested(graph_path: String)
 @onready var browse_button: Button = %BrowseButton
 @onready var wait_checkbox: CheckBox = %WaitForCompletionCheckbox
 @onready var dive_in_button: Button = %DiveInButton
+@onready var terminal_checkbox: CheckBox = %TerminalCheckBox
 
 func _ready() -> void:
 	path_edit.text_submitted.connect(func(_text): _on_path_confirmed())
 	path_edit.focus_exited.connect(_on_path_confirmed)
 	wait_checkbox.toggled.connect(_on_wait_toggled)
+	terminal_checkbox.toggled.connect(_on_terminal_toggled)
 	dive_in_button.pressed.connect(_on_dive_in_pressed)
 	browse_button.pressed.connect(_on_browse_button_pressed)
 
@@ -22,6 +24,7 @@ func set_node_data(node_data: GraphNodeResource) -> void:
 	
 	path_edit.text = node_data.quest_graph_path
 	wait_checkbox.button_pressed = node_data.wait_for_completion
+	terminal_checkbox.button_pressed = node_data.is_terminal
 	_update_dive_in_button_state()
 
 func _can_drop_data(_at_position, data) -> bool:
@@ -64,3 +67,9 @@ func _on_dive_in_pressed():
 func _update_dive_in_button_state():
 	var path = path_edit.text
 	dive_in_button.disabled = path.is_empty() or not ResourceLoader.exists(path)
+
+func _on_terminal_toggled(pressed: bool) -> void:
+	if is_instance_valid(edited_node_data) and edited_node_data.is_terminal != pressed:
+		property_update_requested.emit(edited_node_data.id, "is_terminal", pressed)
+		edited_node_data.is_terminal = pressed
+		edited_node_data._update_ports_from_data()

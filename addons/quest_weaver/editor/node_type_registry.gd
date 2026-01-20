@@ -226,9 +226,13 @@ func _build_lookup_tables() -> void:
 			elif temp_node is EndNodeResource: info.role = NodeTypeInfo.Role.END
 			else: info.role = NodeTypeInfo.Role.NORMAL
 			
-			node_types.append(info)
+			# Intern maps (always register these so existing nodes work)
 			_resource_to_info_map[res_script] = info
 			_name_to_resource_map[info.node_name] = res_script
+			
+			# Public List for "Add Node" Menu
+			if info.role != NodeTypeInfo.Role.START:
+				node_types.append(info)
 
 	_is_initialized = true
 

@@ -31,9 +31,9 @@ popup/item_3/id = 3
 popup/item_4/text = "CHECK_VARIABLE"
 popup/item_4/id = 4
 popup/item_5/text = "CHECK_OBJECTIVE_STATUS"
-popup/item_5/id = 5
+popup/item_5/id = 6
 popup/item_6/text = "COMPOUND"
-popup/item_6/id = 6
+popup/item_6/id = 7
 
 [node name="PropertyContainer" type="PanelContainer" parent="."]
 layout_mode = 2

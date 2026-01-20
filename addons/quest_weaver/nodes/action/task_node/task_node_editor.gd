@@ -4,11 +4,13 @@ extends NodePropertyEditorBase
 
 @onready var objectives_list: VBoxContainer = %ObjectivesList
 @onready var add_objective_button: Button = %AddObjectiveButton
+@onready var terminal_checkbox: CheckBox = %TerminalCheckBox
 
 var _ui_entry_map: Dictionary = {}
 
 func _ready() -> void:
 	add_objective_button.pressed.connect(_on_add_objective_pressed)
+	terminal_checkbox.toggled.connect(_on_terminal_toggled)
 
 func set_node_data(node_data: GraphNodeResource) -> void:
 	super.set_node_data(node_data)
@@ -19,6 +21,7 @@ func set_node_data(node_data: GraphNodeResource) -> void:
 		return
 	
 	_rebuild_objectives_list()
+	terminal_checkbox.button_pressed = node_data.is_terminal
 
 func _rebuild_objectives_list() -> void:
 	for child in objectives_list.get_children():
@@ -74,3 +77,9 @@ func _on_objective_trigger_type_changed(new_type_index: int, objective: Objectiv
 func _on_objective_trigger_param_changed(param_name: String, new_value: Variant, objective: ObjectiveResource) -> void:
 	var payload = {"objective": objective, "param_name": param_name, "param_value": new_value}
 	complex_action_requested.emit(edited_node_data.id, "update_objective_trigger_param", payload)
+
+func _on_terminal_toggled(pressed: bool) -> void:
+	if is_instance_valid(edited_node_data) and edited_node_data.is_terminal != pressed:
+		property_update_requested.emit(edited_node_data.id, "is_terminal", pressed)
+		edited_node_data.is_terminal = pressed
+		edited_node_data._update_ports_from_data()

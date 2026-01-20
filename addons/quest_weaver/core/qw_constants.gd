@@ -3,7 +3,7 @@ class_name QWConstants
 extends RefCounted
 
 # ==============================================================================
-# Settings & Resources (Replaced with lazy-loaded statics)
+# Settings & Resources
 # ==============================================================================
 static var _settings: Resource = null
 static var _graph_node_category: Resource = null
@@ -62,7 +62,8 @@ const QUEST_CONTEXT_NODE_SCRIPT_PATH = "res://addons/quest_weaver/nodes/logic/qu
 # Data Structures
 # ==============================================================================
 const TRANSLATABLE_FIELDS = {
-	"QuestContextNodeResource": ["quest_title", "quest_description", "log_on_start"],
-	"TextNodeResource": ["text_content"],
-	"ObjectiveResource": ["description"]
+	"quest_context_node_resource": ["quest_title", "quest_description", "log_on_start"],
+	"text_node_resource": ["text_content"],
+	"objective_resource": ["description"],
+	"show_ui_message_node_resource": ["title_override", "message_override"]
 }

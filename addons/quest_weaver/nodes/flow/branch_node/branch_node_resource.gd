@@ -15,32 +15,32 @@ func _init() -> void:
 	if id.is_empty() and conditions.is_empty():
 		add_condition({})
 
-func check_all_conditions(context: ExecutionContext) -> bool:
+func check_all_conditions(context: ExecutionContext, instance: QuestInstance) -> bool:
 	if conditions.is_empty():
 		return true
 
 	match operator:
 		LogicOperator.AND:
 			for condition in conditions:
-				if not is_instance_valid(condition) or not condition.check(context):
+				if not is_instance_valid(condition) or not condition.check(context, instance):
 					return false
 			return true
 			
 		LogicOperator.OR:
 			for condition in conditions:
-				if is_instance_valid(condition) and condition.check(context):
+				if is_instance_valid(condition) and condition.check(context, instance):
 					return true
 			return false
 
 		LogicOperator.NAND: # Not AND
 			for condition in conditions:
-				if not is_instance_valid(condition) or not condition.check(context):
+				if not is_instance_valid(condition) or not condition.check(context, instance):
 					return true
 			return false
 			
 		LogicOperator.NOR: # Not OR
 			for condition in conditions:
-				if is_instance_valid(condition) and condition.check(context):
+				if is_instance_valid(condition) and condition.check(context, instance):
 					return false
 			return true
 			

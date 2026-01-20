@@ -2,7 +2,7 @@
 class_name SubGraphNodeExecutor
 extends NodeExecutor
 
-func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
+func execute(context: ExecutionContext, node: GraphNodeResource, _instance: QuestInstance) -> void:
 	var subgraph_node = node as SubGraphNodeResource
 	if not is_instance_valid(subgraph_node): return
 
@@ -10,14 +10,16 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 	var graph_path = subgraph_node.quest_graph_path
 
 	if graph_path.is_empty() or not ResourceLoader.exists(graph_path):
+		push_error("SubGraphNode: Invalid path '%s'" % graph_path)
 		controller.complete_node(subgraph_node)
 		return
 
 	if subgraph_node.wait_for_completion:
-		subgraph_node.status = GraphNodeResource.Status.ACTIVE
+		# Pushing to call stack allows the controller to return here later
 		controller.push_to_call_stack(subgraph_node.id)
 	
 	controller.start_sub_graph(graph_path)
 
+	# If NOT waiting, we complete immediately and the sub-graph runs in parallel/detached
 	if not subgraph_node.wait_for_completion:
 		controller.complete_node(subgraph_node)

@@ -1,0 +1,15 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://b3ckhdum0k53b"
+valid=false
+
+[deps]
+
+source_file="res://addons/quest_weaver/examples/lang/localization.csv"
+
+[params]
+
+compress=true
+delimiter=0

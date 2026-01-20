@@ -2,13 +2,13 @@
 class_name QuestContextNodeExecutor
 extends NodeExecutor
 
-func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
+func execute(context: ExecutionContext, node: GraphNodeResource, instance: QuestInstance) -> void:
 	var context_node = node as QuestContextNodeResource
 	if not is_instance_valid(context_node):
-		push_error("Executor expects a QuestContextNodeResource.")
 		context.quest_controller.complete_node(node)
 		return
 	
 	context.quest_controller.start_quest(context_node)
 	
+	# After updating the state, we continue the flow.
 	context.quest_controller.complete_node(node)

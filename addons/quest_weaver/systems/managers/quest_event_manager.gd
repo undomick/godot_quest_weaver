@@ -2,154 +2,112 @@
 class_name QuestEventManager
 extends RefCounted
 
-## Manages the registration and triggering of global quest events.
+## Manages global event listeners.
+## Stores mapping: EventName -> List of NodeIDs.
 
-var _event_listeners: Dictionary = {} # { "event_name": ["node_id_1", "node_id_2"] }
-var _controller
+var _event_listeners: Dictionary = {} 
+var _controller: QuestController
 
-func _init(p_controller):
+func _init(p_controller: QuestController):
 	self._controller = p_controller
 
-## Registers a node that listens for a specific event.
 func register_listener(listener_node: EventListenerNodeResource):
-	var event_name = listener_node.event_name
-	var node_id = listener_node.id
+	var evt = listener_node.event_name
+	if not _event_listeners.has(evt):
+		_event_listeners[evt] = []
+	if not listener_node.id in _event_listeners[evt]:
+		_event_listeners[evt].append(listener_node.id)
 
-	if not _event_listeners.has(event_name):
-		_event_listeners[event_name] = []
-		
-	if not node_id in _event_listeners[event_name]:
-		_event_listeners[event_name].append(node_id)
-
-## Removes a specific listener for an event.
-## Required when an EventListener is cancelled (e.g. via Cancel port).
 func unregister_listener(listener_node: EventListenerNodeResource):
-	var event_name = listener_node.event_name
-	var node_id = listener_node.id
-	
-	if not _event_listeners.has(event_name): return
-	
-	if node_id in _event_listeners[event_name]:
-		_event_listeners[event_name].erase(node_id)
-		if _controller._logger:
-			_controller._logger.log("System", "Listener '%s' manually unregistered from event '%s'." % [node_id, event_name])
-		
-	# Cleanup if the array is empty
-	if _event_listeners[event_name].is_empty():
-		_event_listeners.erase(event_name)
+	var evt = listener_node.event_name
+	if _event_listeners.has(evt):
+		_event_listeners[evt].erase(listener_node.id)
+		if _event_listeners[evt].is_empty():
+			_event_listeners.erase(evt)
 
-## Called when a global quest event is received.
 func on_global_event(event_name: String, payload: Dictionary):
 	if not _event_listeners.has(event_name): return
 	
-	# Iterate backwards or use duplicate to allow removal during iteration
-	var listeners_to_trigger = _event_listeners[event_name].duplicate()
+	# Iterate copy to allow modifications during loop
+	var listeners = _event_listeners[event_name].duplicate()
 	
-	for node_id in listeners_to_trigger:
-		var node_instance = _controller._active_nodes.get(node_id)
+	for node_id in listeners:
+		# 1. Resolve Instance
+		var quest_id = _controller.get_quest_id_for_node(node_id)
+		var instance: QuestInstance = _controller._active_instances.get(quest_id)
 		
-		if is_instance_valid(node_instance) and node_instance is EventListenerNodeResource:
-			# 1. Check Conditions
-			var condition_passes = true
-			if node_instance.use_simple_conditions:
-				condition_passes = _check_simple_conditions(node_instance.simple_conditions, payload)
-			else:
-				if is_instance_valid(node_instance.payload_condition):
-					condition_passes = node_instance.payload_condition.check(payload)
+		# If instance or node is not active, ignore/cleanup
+		if not instance or not instance.is_node_active(node_id):
+			# Lazy cleanup: The listener might be stale if cleanup failed elsewhere
+			continue
 			
-			# 2. Handle Result
+		var node_def = _controller._node_definitions.get(node_id)
+		if node_def is EventListenerNodeResource:
+			# 2. Check Conditions (Instance-aware)
+			var condition_passes = true
+			if node_def.use_simple_conditions:
+				condition_passes = _check_simple_conditions(node_def.simple_conditions, payload)
+			else:
+				if is_instance_valid(node_def.payload_condition):
+					condition_passes = node_def.payload_condition.check(payload, instance)
+			
+			# 3. Trigger
 			if condition_passes:
 				if _controller._logger:
-					_controller._logger.log("Flow", "    - Triggering EventListenerNode '%s' (Condition met)." % node_id)
+					_controller._logger.log("Flow", "Event '%s' triggered listener '%s'." % [event_name, node_id])
 				
-				if node_instance.keep_listening:
-					# LOOP MODE: Only fire output, do not complete node.
-					_controller._trigger_next_nodes_from_port(node_instance, 0)
+				if node_def.keep_listening:
+					_controller._trigger_next_nodes_from_port(node_def, 0)
 				else:
-					# ONE-SHOT MODE: Remove listener and complete node.
+					# One-shot: Remove from my list and complete node
 					_event_listeners[event_name].erase(node_id)
-					_controller.complete_node(node_instance)
-				
-			else:
-				# Condition failed, do nothing.
-				pass
-	
-	if _event_listeners.has(event_name) and _event_listeners[event_name].is_empty():
-		_event_listeners.erase(event_name)
+					_controller.complete_node(node_def)
 
-## Clears the internal state.
 func clear():
 	_event_listeners.clear()
 
-## Removes all listeners belonging to a specific quest.
-func remove_listeners_for_quest(nodes_in_quest: Dictionary):
-	for event_name in _event_listeners.keys():
-		var listeners = _event_listeners[event_name]
-		for i in range(listeners.size() - 1, -1, -1):
-			var node_id = listeners[i]
-			if node_id in nodes_in_quest:
-				listeners.remove_at(i)
-				if _controller._logger:
-					_controller._logger.log("Flow", "De-registered listener '%s' for event '%s'." % [node_id, event_name])
+func remove_listeners_for_quest(nodes_in_quest: Array):
+	for evt in _event_listeners.keys():
+		var list = _event_listeners[evt]
+		for i in range(list.size() - 1, -1, -1):
+			if list[i] in nodes_in_quest:
+				list.remove_at(i)
 
-## Returns data for the save system.
-func get_save_data() -> Dictionary:
-	return _event_listeners.duplicate(true)
-
-## Restores the state from save data.
-func load_save_data(data: Dictionary):
-	_event_listeners = data
-
+# --- Helper for Simple Conditions ---
 func _check_simple_conditions(conditions: Array[Dictionary], payload: Dictionary) -> bool:
-	# If no conditions are defined, the result is always 'true'.
-	if conditions.is_empty():
-		return true
-
-	for condition in conditions:
-		var key = condition.get("key", "")
-		var op = condition.get("op", EventListenerNodeResource.SimpleOperator.EQUALS)
-		var expected_value_str = condition.get("value", "")
+	if conditions.is_empty(): return true
+	for c in conditions:
+		var key = c.get("key", "")
+		var op = c.get("op", 0)
+		var val_str = c.get("value", "")
 		
-		# Ignore empty conditions
-		if key.is_empty(): continue 
-		
-		if op == EventListenerNodeResource.SimpleOperator.HAS:
+		if key.is_empty(): continue
+		if op == 6: # HAS
 			if not payload.has(key): return false
-			else: continue # HAS condition met, check next.
-
-		if not payload.has(key):
-			# If the key is missing, only NOT_EQUALS can be true.
-			if op == EventListenerNodeResource.SimpleOperator.NOT_EQUALS:
-				continue # Condition met, check next.
-			else:
-				return false # Condition failed.
-
-		var actual_value = payload[key]
-		var expected_value = _parse_string_to_variant(expected_value_str)
-
-		# Perform the actual comparison.
-		var result = _compare_values(actual_value, expected_value, op)
-		if not result:
-			# If a single condition fails, the total result is 'false'.
-			return false
+			continue
 			
-	# If the loop completes without returning 'false', all conditions are met.
+		if not payload.has(key):
+			if op != 1: return false # Only NOT_EQUALS passes on missing key
+			continue
+			
+		var actual = payload[key]
+		var expected = _parse_val(val_str)
+		if not _compare(actual, expected, op): return false
 	return true
 
-# Helper functions required by _check_simple_conditions.
-func _compare_values(actual: Variant, expected: Variant, op: EventListenerNodeResource.SimpleOperator) -> bool:
+func _compare(a, b, op) -> bool:
 	match op:
-		EventListenerNodeResource.SimpleOperator.EQUALS: return actual == expected
-		EventListenerNodeResource.SimpleOperator.NOT_EQUALS: return actual != expected
-		EventListenerNodeResource.SimpleOperator.GREATER_THAN: return actual > expected
-		EventListenerNodeResource.SimpleOperator.LESS_THAN: return actual < expected
-		EventListenerNodeResource.SimpleOperator.GREATER_OR_EQUAL: return actual >= expected
-		EventListenerNodeResource.SimpleOperator.LESS_OR_EQUAL: return actual <= expected
+		0: return a == b
+		1: return a != b
+		2: return a > b
+		3: return a < b
+		4: return a >= b
+		5: return a <= b
 	return false
 
-func _parse_string_to_variant(text: String) -> Variant:
-	if text.is_valid_int(): return text.to_int()
-	if text.is_valid_float(): return text.to_float()
-	if text.to_lower() == "true": return true
-	if text.to_lower() == "false": return false
-	return text
+func _parse_val(t: String):
+	if t.is_valid_int(): return t.to_int()
+	if t.is_valid_float(): return t.to_float()
+	if t.to_lower() == "true": return true
+	if t.to_lower() == "false": return false
+	return t

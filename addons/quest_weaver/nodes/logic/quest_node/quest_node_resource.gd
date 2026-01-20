@@ -16,7 +16,7 @@ enum QuestAction {
 func _init() -> void:
 	category = "Logic"
 	input_ports = ["In"]
-	output_ports = ["Out"]
+	_update_ports_from_data()
 
 func get_editor_summary() -> String:
 	if not target_quest_id.is_empty():
@@ -34,6 +34,12 @@ func get_description() -> String:
 func get_icon() -> Texture2D:
 	return preload("res://addons/quest_weaver/assets/icons/quest.svg")
 
+func _update_ports_from_data() -> void:
+	if is_terminal:
+		output_ports = []
+	else:
+		output_ports = ["Out"]
+
 func to_dictionary() -> Dictionary:
 	var data = super.to_dictionary()
 	data["target_quest_id"] = self.target_quest_id
@@ -44,6 +50,7 @@ func from_dictionary(data: Dictionary):
 	super.from_dictionary(data)
 	self.target_quest_id = data.get("target_quest_id", "")
 	self.action = data.get("action", QuestAction.COMPLETE)
+	_update_ports_from_data()
 
 func _validate(context: Dictionary) -> Array[ValidationResult]:
 	var results: Array[ValidationResult] = []

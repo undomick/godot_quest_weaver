@@ -2,44 +2,51 @@
 class_name ShowUIMessageNodeExecutor
 extends NodeExecutor
 
-func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
+func execute(context: ExecutionContext, node: GraphNodeResource, instance: QuestInstance) -> void:
 	var msg_node = node as ShowUIMessageNodeResource
 	if not is_instance_valid(msg_node): return
 	
-	# --- NEW: SUPPRESSION CHECK ---
+	var controller = context.quest_controller
+	var logger = context.logger
+	
+	# --- 1. Suppression Check ---
 	var global_bus = context.services.get_tree().root.get_node_or_null("QuestWeaverGlobal")
 	if is_instance_valid(global_bus) and global_bus.are_notifications_suppressed:
-		# If suppressed, we treat it as if it completed instantly.
-		# We do NOT show UI and do NOT lock the game.
-		if is_instance_valid(context.logger):
-			context.logger.log("Flow", "Suppressed UI Message '%s' due to global setting." % msg_node.id)
-		
-		context.quest_controller.complete_node(msg_node)
+		if logger:
+			logger.log("Flow", "Suppressed UI Message '%s' due to global setting." % msg_node.id)
+		# Skip logic and complete immediately
+		controller.complete_node(msg_node)
 		return
-	# ------------------------------
-	
+
+	# --- 2. Resolve Text Placeholders ---
+	# This enables "Kill {amount} Rats" to become "Kill 5 Rats" using instance variables.
+	var final_title = instance.resolve_text(msg_node.title_override)
+	var final_message = instance.resolve_text(msg_node.message_override)
+
+	if logger:
+		logger.log("Executor", "ShowUIMessage: '%s' - '%s'" % [final_title, final_message])
+
 	var presentation_manager = null
 	if is_instance_valid(context.services):
 		presentation_manager = context.services.presentation_manager
 
 	if not is_instance_valid(presentation_manager):
 		push_warning("ShowUIMessageNodeExecutor: PresentationManager not found via Services.")
-		context.quest_controller.complete_node(msg_node)
+		controller.complete_node(msg_node)
 		return
 
-	# --- GLOBAL LOCK START ---
-	# If we wait, we treat this as a blocking interaction (cutscene/dialogue)
+	# --- 3. Global Lock (If Blocking) ---
 	if msg_node.wait_for_completion:
 		if is_instance_valid(global_bus):
 			global_bus.lock_interaction(msg_node.id)
-	# -------------------------
 
+	# --- 4. Queue Presentation ---
 	var presentation_data = {
-		"_node_id": msg_node.id, # Pass Token for matching
+		"_node_id": msg_node.id, # Token for signal matching
 		
 		"type": msg_node.message_type,
-		"title": msg_node.title_override,
-		"message": msg_node.message_override,
+		"title": final_title,
+		"message": final_message,
 		
 		"anim_in": msg_node.animation_in,
 		"ease_in": msg_node.ease_in,
@@ -58,22 +65,22 @@ func execute(context: ExecutionContext, node: GraphNodeResource) -> void:
 
 	presentation_manager.queue_presentation(presentation_data)
 
+	# --- 5. Wait or Continue ---
 	if msg_node.wait_for_completion:
-		msg_node.status = GraphNodeResource.Status.ACTIVE
-		
-		# Wait loop: Only proceed if the signal returns THIS node's ID
+		# Wait loop: Only proceed if the signal returns THIS node's ID.
+		# This prevents signal cross-talk if multiple messages fire rapidly.
 		while true:
 			var finished_id = await presentation_manager.presentation_completed
 			if finished_id == msg_node.id:
 				break
 		
-		# --- GLOBAL LOCK END ---
+		# Unlock global input
 		if is_instance_valid(global_bus):
 			global_bus.unlock_interaction(msg_node.id)
-		# -----------------------
 		
-		# Check if node is still relevant (might have been skipped/reset externally)
-		if is_instance_valid(context.quest_controller) and context.quest_controller._active_nodes.has(msg_node.id):
-			context.quest_controller.complete_node(msg_node)
+		# Check if node is still active in the instance (it might have been skipped or reset externally)
+		if instance.is_node_active(msg_node.id):
+			controller.complete_node(msg_node)
 	else:
-		context.quest_controller.complete_node(msg_node)
+		# Fire and forget
+		controller.complete_node(msg_node)

@@ -74,6 +74,14 @@ disabled = true
 icon = ExtResource("2_r5pjp")
 flat = true
 
+[node name="LocalizationButton" type="Button" parent="Toolbar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(16, 24)
+layout_mode = 2
+tooltip_text = "Update Localization CSV"
+icon = SubResource("DPITexture_r5pjp")
+flat = true
+
 [node name="Spacer" type="Control" parent="Toolbar"]
 layout_mode = 2
 size_flags_horizontal = 3

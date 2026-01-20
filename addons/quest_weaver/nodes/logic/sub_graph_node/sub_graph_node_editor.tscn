@@ -25,10 +25,22 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "..."
 
+[node name="HSeparator4" type="HSeparator" parent="."]
+layout_mode = 2
+
 [node name="WaitForCompletionCheckbox" type="CheckBox" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Wait for Completion"
+
+[node name="TerminalCheckBox" type="CheckBox" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Disables Output-Port(s). Helps to avoid warnings in the validator."
+text = "End of Flow"
+
+[node name="HSeparator5" type="HSeparator" parent="."]
+layout_mode = 2
 
 [node name="DiveInButton" type="Button" parent="."]
 unique_name_in_owner = true

@@ -2,7 +2,7 @@
 extends Node
 
 ## Global Event Bus and Facade for Quest Weaver.
-## Provides easy access to quest states, variables, and flow control.
+## Provides easy access to quest states, variables and flow control.
 
 # --- SIGNALS ---
 signal quest_event_fired(event_name: String, payload: Dictionary)
@@ -40,18 +40,17 @@ func is_quest_failed(quest_id: String) -> bool:
 	return get_quest_state(quest_id) == 3 # 3 = FAILED
 
 ## Returns the raw enum value (0=INACTIVE, 1=ACTIVE, 2=COMPLETED, 3=FAILED).
-## Returns 0 (INACTIVE) if the quest/controller is not found.
 func get_quest_state(quest_id: String) -> int:
 	var controller = _get_controller_safe()
 	if not controller: return 0
 	
-	# Access internal state directly for performance, assuming QuestController structure
-	if controller.has_method("get_quest_data"):
-		var data = controller.get_quest_data(quest_id)
-		return data.get("status", 0)
+	# Optimization: Call dedicated method instead of fetching full data dict
+	if controller.has_method("get_quest_state"):
+		return controller.get_quest_state(quest_id)
+		
 	return 0
 
-## Checks if a specific objective within a running or finished quest is marked complete.
+## Checks if a specific objective is marked complete (Status 2).
 func is_objective_completed(objective_id: String) -> bool:
 	var controller = _get_controller_safe()
 	if not controller: return false
@@ -60,6 +59,20 @@ func is_objective_completed(objective_id: String) -> bool:
 		# 2 = ObjectiveResource.Status.COMPLETED
 		return controller.get_objective_status(objective_id) == 2
 	return false
+
+## Returns the current progress count of an objective.
+func get_objective_progress(objective_id: String) -> int:
+	var controller = _get_controller_safe()
+	if controller and controller.has_method("get_objective_progress"):
+		return controller.get_objective_progress(objective_id)
+	return 0
+
+## Retrieves a runtime variable from a specific quest instance.
+func get_quest_variable(quest_id: String, key: String, default: Variant = null) -> Variant:
+	var controller = _get_controller_safe()
+	if controller and controller.has_method("get_quest_variable"):
+		return controller.get_quest_variable(quest_id, key, default)
+	return default
 
 # ==============================================================================
 # 2. VARIABLE ACCESS (GameState Bridge)
@@ -85,6 +98,33 @@ func start_quest(quest_id: String) -> void:
 	var controller = _get_controller_safe()
 	if controller and controller.has_method("start_quest_by_id"):
 		controller.start_quest_by_id(quest_id)
+
+## Starts a quest with parameters (Templates).
+## Example: start_quest_with_parameters("fetch_generic", {"item": "apple", "amount": 10})
+func start_quest_with_parameters(quest_id: String, params: Dictionary) -> void:
+	var controller = _get_controller_safe()
+	if controller and controller.has_method("start_quest_with_parameters"):
+		controller.start_quest_with_parameters(quest_id, params)
+
+## Resets and restarts a quest from the beginning.
+func restart_quest(quest_id: String) -> void:
+	var controller = _get_controller_safe()
+	if controller: controller.restart_quest(quest_id)
+
+## Forces the quest flow to jump to a specific node (Debug/Cheat).
+func jump_to_node(node_id: String) -> void:
+	var controller = _get_controller_safe()
+	if controller: controller.jump_to_node(node_id)
+
+## Completes a quest successfully.
+func finish_quest(quest_id: String) -> void:
+	var controller = _get_controller_safe()
+	if controller: controller.finish_quest(quest_id)
+
+## Marks a quest as failed.
+func fail_quest(quest_id: String) -> void:
+	var controller = _get_controller_safe()
+	if controller: controller.fail_quest(quest_id)
 
 ## Manually completes a specific objective by ID.
 func complete_objective(objective_id: String) -> void:

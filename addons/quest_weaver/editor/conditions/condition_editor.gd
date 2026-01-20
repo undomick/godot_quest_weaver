@@ -23,6 +23,9 @@ func _ready():
 		type_picker.add_item(type_name, type_value)
 	
 	type_picker.item_selected.connect(_on_type_picker_selected)
+	
+	# --- TOOLTIP ---
+	type_picker.tooltip_text = "Select the type of logic check to perform."
 
 func edit_condition(condition_res: ConditionResource):
 	self.edited_condition = condition_res
@@ -39,15 +42,13 @@ func _rebuild_ui():
 	var item_index = type_picker.get_item_index(edited_condition.type)
 	type_picker.select(item_index)
 	
-	# --- DEBUG PRINT ---
-	# print("Rebuilding UI for type: ", edited_condition.type)
-	
 	match edited_condition.type:
 		ConditionResource.ConditionType.BOOL:
 			var checkbox = CheckBox.new()
 			checkbox.text = "Returns 'true'"
 			checkbox.button_pressed = edited_condition.is_true
 			checkbox.toggled.connect(_on_checkbox_toggled.bind("is_true"))
+			checkbox.tooltip_text = "If checked, the condition always passes.\nIf unchecked, it always fails."
 			add_row("Value", checkbox)
 		
 		ConditionResource.ConditionType.CHANCE:
@@ -55,6 +56,7 @@ func _rebuild_ui():
 			spinbox.min_value = 0.0; spinbox.max_value = 100.0; spinbox.step = 0.1; spinbox.suffix = "%"
 			spinbox.value = edited_condition.chance_percentage
 			spinbox.value_changed.connect(func(val): property_changed.emit("chance_percentage", val))
+			spinbox.tooltip_text = "The probability that this condition is met.\nUseful for random branches."
 			add_row("Chance", spinbox)
 		
 		ConditionResource.ConditionType.CHECK_ITEM:
@@ -62,12 +64,14 @@ func _rebuild_ui():
 			QWEditorUtils.populate_item_completer(item_id_completer)
 			item_id_completer.text = edited_condition.item_id
 			item_id_completer.text_submitted.connect(func(text): property_changed.emit("item_id", text))
+			item_id_completer.tooltip_text = "The ID of the item to check in the player's inventory."
 			add_row("Item ID", item_id_completer)
 
 			var amount_spinbox = SpinBox.new()
 			amount_spinbox.min_value = 1; amount_spinbox.step = 1
 			amount_spinbox.value = edited_condition.amount
 			amount_spinbox.value_changed.connect(func(val): property_changed.emit("amount", int(val)))
+			amount_spinbox.tooltip_text = "The minimum quantity required to pass the check."
 			add_row("Amount", amount_spinbox)
 		
 		ConditionResource.ConditionType.CHECK_QUEST_STATUS:
@@ -76,6 +80,7 @@ func _rebuild_ui():
 				status_picker.add_item(status_name)
 			status_picker.select(edited_condition.expected_status)
 			status_picker.item_selected.connect(_on_option_button_selected.bind("expected_status"))
+			status_picker.tooltip_text = "The state the target quest must be in."
 			add_row("Expected Status", status_picker)
 			
 			var quest_id_completer = QWConstants.AutoCompleteLineEditScene.instantiate()
@@ -89,12 +94,14 @@ func _rebuild_ui():
 			var_name_edit.text = edited_condition.variable_name
 			var_name_edit.text_submitted.connect(func(_text): _on_line_edit_confirmed(var_name_edit, "variable_name"))
 			var_name_edit.focus_exited.connect(_on_line_edit_confirmed.bind(var_name_edit, "variable_name"))
+			var_name_edit.tooltip_text = "Name of the variable in the global GameState or local QuestInstance."
 			add_row("Variable Name", var_name_edit)
 			
 			var operator_picker = OptionButton.new()
 			for op_name in edited_condition.Operator.keys(): operator_picker.add_item(op_name)
 			operator_picker.select(edited_condition.operator)
 			operator_picker.item_selected.connect(_on_option_button_selected.bind("operator"))
+			operator_picker.tooltip_text = "Comparison operator."
 			add_row("Operator", operator_picker)
 
 			var expected_value_edit = LineEdit.new()
@@ -102,6 +109,7 @@ func _rebuild_ui():
 			expected_value_edit.text = edited_condition.expected_value_string
 			expected_value_edit.text_submitted.connect(func(_text): _on_line_edit_confirmed(expected_value_edit, "expected_value_string"))
 			expected_value_edit.focus_exited.connect(_on_line_edit_confirmed.bind(expected_value_edit, "expected_value_string"))
+			expected_value_edit.tooltip_text = "The value to compare against.\n- Number: 123\n- Float: 1.5\n- Bool: true/false\n- String: text\n- Variable: $other_var_name"
 			add_row("Expected Value", expected_value_edit)
 		
 		ConditionResource.ConditionType.CHECK_OBJECTIVE_STATUS:
@@ -110,6 +118,7 @@ func _rebuild_ui():
 			id_edit.text = edited_condition.objective_id
 			id_edit.text_submitted.connect(func(_text): _on_line_edit_confirmed(id_edit, "objective_id"))
 			id_edit.focus_exited.connect(func(): _on_line_edit_confirmed(id_edit, "objective_id"))
+			id_edit.tooltip_text = "The internal ID of the objective to check."
 			add_row("Objective ID", id_edit)
 			
 			var status_picker = OptionButton.new()
@@ -120,6 +129,7 @@ func _rebuild_ui():
 			
 			status_picker.select(edited_condition.expected_objective_status)
 			status_picker.item_selected.connect(_on_option_button_selected.bind("expected_objective_status"))
+			status_picker.tooltip_text = "The state the objective must be in (e.g. Completed)."
 			add_row("Expected Status", status_picker)
 		
 		ConditionResource.ConditionType.CHECK_SYNCHRONIZER:
@@ -130,6 +140,7 @@ func _rebuild_ui():
 			for op_name in edited_condition.LogicOperator.keys(): op_picker.add_item(op_name)
 			op_picker.select(edited_condition.logic_operator)
 			op_picker.item_selected.connect(_on_option_button_selected.bind("logic_operator"))
+			op_picker.tooltip_text = "AND: All sub-conditions must be true.\nOR: At least one must be true."
 			add_row("Logic", op_picker)
 			
 			for i in range(edited_condition.sub_conditions.size()):
@@ -148,7 +159,7 @@ func _rebuild_ui():
 				property_fields.add_child(sub_editor_container)
 				
 				sub_editor.edit_condition(sub_condition)
-				sub_editor.property_changed.connect(property_changed.emit) # .emit weiterleiten!
+				sub_editor.property_changed.connect(property_changed.emit)
 				sub_editor.rebuild_requested.connect(rebuild_requested.emit)
 
 			var add_button = Button.new()

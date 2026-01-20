@@ -25,6 +25,7 @@ var data_manager: QWGraphData
 @onready var open_dir_button: Button = %OpenDirButton
 @onready var save_button: Button = %SaveButton
 @onready var save_all_button: Button = %SaveAllButton
+@onready var localization_button: Button = %LocalizationButton
 @onready var donate_button: Button = %DonateButton
 @onready var docs_button: Button = %DocsButton
 
@@ -86,6 +87,7 @@ func _load_icons() -> void:
 	open_dir_button.icon = get_theme_icon("Filesystem", "EditorIcons")
 	save_button.icon = get_theme_icon("Save", "EditorIcons")
 	save_all_button.icon = load("res://addons/quest_weaver/assets/icons/save_all.svg")
+	localization_button.icon = get_theme_icon("Translation", "EditorIcons")
 	docs_button.icon = get_theme_icon("Help", "EditorIcons")
 	
 	filter_edit.right_icon = _search_icon
@@ -99,6 +101,7 @@ func _setup_ui_connections() -> void:
 	open_dir_button.pressed.connect(func(): open_dir_dialog.popup_centered(Vector2i(800, 600)))
 	save_button.pressed.connect(save_active_graph_requested.emit)
 	save_all_button.pressed.connect(save_all_files_requested.emit)
+	localization_button.pressed.connect(_on_scan_keys_pressed)
 	donate_button.pressed.connect(func(): OS.shell_open("https://ko-fi.com/jundrie"))
 	docs_button.pressed.connect(func(): OS.shell_open("https://github.com/undomick/godot_nexus_quest_weaver/wiki"))
 	
@@ -167,17 +170,35 @@ func _on_quick_create_submitted(new_name: String) -> void:
 		start_node.graph_category = "Uncategorized" 
 		new_res.nodes["start_node"] = start_node
 	
-	# Save using ResourceSaver to ensure proper format (Binary or Text based on extension)
-	# Force .tres format if .quest is mapped to text resource, otherwise generic
-	var err = ResourceSaver.save(new_res, full_path)
-	if err != OK:
-		push_error("QuestWeaver: Could not create file. Error code: %d" % err)
+	var file = FileAccess.open(full_path, FileAccess.WRITE)
+	if file == null:
+		push_error("QuestWeaver: Could not create file at '%s'. Error: %s" % [full_path, error_string(FileAccess.get_open_error())])
 		return
+	
+	# Store the dictionary representation directly, matching QWFormat logic.
+	file.store_var(new_res.to_dictionary(), true)
+	file.close()
 	
 	quick_create_edit.hide()
 	if _editor_interface_ref:
 		_editor_interface_ref.get_resource_filesystem().scan()
 	call_deferred("_safe_open_new_file", full_path)
+
+func _on_scan_keys_pressed() -> void:
+	if not Engine.is_editor_hint(): return 
+	
+	var settings = QWConstants.get_settings()
+	if not settings: return
+	
+	LocalizationKeyScanner.update_localization_file(
+		settings.quest_scan_folder,
+		settings.localization_csv_path,
+		settings.supported_locales
+	)
+	
+	# Refresh FileSystem dock
+	if _editor_interface_ref:
+		_editor_interface_ref.get_resource_filesystem().scan()
 
 func get_open_files() -> Array[String]:
 	return _open_files

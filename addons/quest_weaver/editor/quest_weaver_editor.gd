@@ -11,7 +11,6 @@ signal validation_finished(results: Array)
 @onready var add_node_menu: NodeSelectionMenu = %AddNodeMenu
 @onready var version_label: Label = %VersionLabel
 @onready var data_manager: QWGraphData = %DataManager
-@onready var localization_button: Button = %LocalizatonButton
 
 var node_registry: NodeTypeRegistry
 var editor_plugin_instance # Removed type hint 'QuestWeaverPlugin'
@@ -30,11 +29,13 @@ var _pending_connection_data: Dictionary
 
 # State variables for live debugging
 var _live_debugging_active := false
-var _live_node_id: String = ""
-var _completed_node_ids: Dictionary = {}
+var _live_node_ids: Dictionary = {}
+var _active_debug_nodes: Dictionary = {}
+var _completed_node_ids: Dictionary = {} # { "node_id": true }
+var _failed_node_ids: Dictionary = {}    # { "node_id": true }
 var _live_stylebox: StyleBoxFlat
 var _completed_stylebox: StyleBoxFlat
-var _live_pulse_tween: Tween
+var _failed_stylebox: StyleBoxFlat
 
 
 func initialize(plugin, p_session_data: QuestEditorData, p_editor_interface) -> void:
@@ -63,6 +64,7 @@ func initialize(plugin, p_session_data: QuestEditorData, p_editor_interface) -> 
 	side_panel.initialize(data_manager, p_editor_interface)
 	
 	version_label.text = "v%s" % editor_plugin_instance.get_version()
+	_init_debug_styles()
 	_connect_signals()
 	_history.version_changed.connect(_on_history_changed)
 	_load_session_data()
@@ -101,8 +103,6 @@ func _connect_signals() -> void:
 	data_manager.active_graph_changed.connect(_on_active_graph_changed)
 	data_manager.graph_dirty_status_changed.connect(side_panel.mark_file_as_unsaved)
 	data_manager.graph_was_saved.connect(_on_graph_was_saved)
-	
-	localization_button.pressed.connect(_on_scan_keys_pressed)
 	
 	_action_handler.node_data_changed.connect(_on_node_data_changed)
 	_node_factory.create_backdrop_requested.connect(_create_backdrop_from_selection)
@@ -190,14 +190,16 @@ func _on_selection_finished_and_popup(node_id: String) -> void:
 
 func _on_graph_editor_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.is_pressed():
-		# This now correctly holds the position data in the factory
-		_node_factory.show_add_node_menu(graph_controller.scroll_offset + (graph_controller.get_local_mouse_position() / graph_controller.zoom))
+		var graph_pos = graph_controller.get_mouse_position_in_graph()
+		
+		_node_factory.show_add_node_menu(graph_pos)
 		get_viewport().set_input_as_handled()
 
 func _on_connection_to_empty(from_node: StringName, from_port: int, release_position: Vector2) -> void:
-	# This also now correctly calls the factory
 	var connect_data = {"from_node": from_node, "from_port": from_port}
-	_node_factory.show_add_node_menu(release_position, connect_data)
+	var graph_pos = graph_controller.get_mouse_position_in_graph()
+	
+	_node_factory.show_add_node_menu(graph_pos, connect_data)
 
 func _on_node_type_selected_from_menu(type_name: String) -> void:
 	call_deferred("_on_node_type_selected_for_creation", type_name)
@@ -222,25 +224,25 @@ func _create_backdrop_from_selection() -> void:
 	_history.execute_command(command)
 
 func _on_active_graph_changed(new_graph_resource: QuestGraphResource) -> void:
+	_stop_all_debug_tweens()
 	graph_controller.display_graph(new_graph_resource)
 	side_panel.update_selection(data_manager.get_active_graph_path())
 	
-	if is_instance_valid(properties_panel):
-		properties_panel.clear_inspection()
+	if is_instance_valid(properties_panel): properties_panel.clear_inspection()
+	
+	# Restore highlights if live session is active
+	if _live_debugging_active:
+		_wait_and_restore_highlights()
+
+func _wait_and_restore_highlights() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	_restore_highlights_on_graph_change()
 
 func _on_create_new_file_at_path(path: String):
-	if not Engine.is_editor_hint():
-		push_error("Attempted to create new file in exported build.")
-		return
-
-	var new_res = QuestGraphResource.new()
-	var file = FileAccess.open(path, FileAccess.WRITE)
-	if not file:
-		push_error("Could not create new quest file at '%s'." % path)
-		return
-	file.store_var(new_res.to_dictionary(), true)
-	file.close()
-	
+	if not Engine.is_editor_hint(): return
 	call_deferred("_scan_and_edit_new_graph", path)
 
 func _on_bookmark_selected(path: String) -> void:
@@ -316,14 +318,6 @@ func _update_quest_registry() -> void:
 	
 	QuestRegistrar.update_registry_from_project(registry, QWConstants.get_settings().quest_scan_folder)
 
-func _on_scan_keys_pressed():
-	if not Engine.is_editor_hint(): return # Protection block
-	LocalizationKeyScanner.update_localization_file(
-		QWConstants.get_settings().quest_scan_folder,
-		QWConstants.get_settings().localization_csv_path
-	)
-	call_deferred("_runtime_scan_filesystem")
-
 func add_visual_node(node_data: GraphNodeResource) -> void:
 	if is_instance_valid(graph_controller):
 		graph_controller.create_single_visual_node(node_data)
@@ -344,18 +338,26 @@ func remove_visual_connection(from_node: StringName, from_port: int, to_node: St
 
 # This function is called whenever the ActionHandler confirms that node data has changed.
 func _on_node_data_changed(node_id: String, action: String) -> void:
-	var structural_change_actions = ["add_parallel_output","remove_parallel_output", "add_random_output",
-	"remove_random_output", "add_sync_input", "remove_sync_input", "add_sync_output", "remove_sync_output"]
+	# 1. Full Rebuild Actions (HEAVY)
+	var full_rebuild_actions = [] 
 	
-	var partial_refresh_actions = []
+	# 2. Local Structure Actions (Optimized)
+	var local_structure_actions = [
+		"is_terminal", 
+		"add_parallel_output", "remove_parallel_output", "update_parallel_port_name",
+		"add_random_output", "remove_random_output", "update_random_output_name",
+		"add_sync_input", "remove_sync_input", "update_sync_input_name",
+		"add_sync_output", "remove_sync_output", "update_sync_output_name"
+	]
 	
 	var current_graph = data_manager.get_active_graph()
 	
-	if action in structural_change_actions:
-		var old_scroll = graph_controller.scroll_offset; var old_zoom = graph_controller.zoom
+	if action in full_rebuild_actions:
 		graph_controller.display_graph(current_graph)
-	elif action in partial_refresh_actions:
+		
+	elif action in local_structure_actions:
 		graph_controller.update_node_structure_and_connections(node_id)
+		
 	else:
 		graph_controller.refresh_single_node_visuals(node_id)
 	
@@ -375,48 +377,109 @@ func _on_validation_result_selected(node_id: String) -> void:
 	if node_id.is_empty():
 		return
 		
-	clear_graph_selection()
-	
 	var node_to_select = graph_controller.get_node_or_null(NodePath(node_id))
-	if is_instance_valid(node_to_select):
-		node_to_select.selected = true
-		var node_pos = node_to_select.position_offset
-		var view_size = graph_controller.size
-		var current_zoom = graph_controller.zoom if graph_controller.zoom > 0 else 1.0
-		graph_controller.scroll_offset = node_pos - (view_size / (2.0 * current_zoom))
+	if not is_instance_valid(node_to_select):
+		push_warning("QuestWeaver: Node '%s' not found in current graph." % node_id)
+		return
+	
+	clear_graph_selection()
+	node_to_select.selected = true
+
+	var target_zoom: float = 1.0
+	graph_controller.zoom = target_zoom
+	
+	var node_center: Vector2 = node_to_select.position_offset + (node_to_select.size / 2.0)
+	var viewport_pixel_size: Vector2 = graph_controller.size
+	var viewport_graph_size: Vector2 = viewport_pixel_size / target_zoom
+	var final_offset: Vector2 = node_center - (viewport_graph_size / 2.0)
+	
+	graph_controller.scroll_offset = final_offset
+
+# ==============================================================================
+# LIVE DEBUGGING LOGIC
+# ==============================================================================
+
+func _init_debug_styles() -> void:
+	# ACTIVE (Orange/Gold)
+	_live_stylebox = StyleBoxFlat.new()
+	_live_stylebox.bg_color = Color(1, 0.6, 0.0, 0.15) 
+	_live_stylebox.border_color = Color(1, 0.6, 0.0, 1.0) 
+	_live_stylebox.set_border_width_all(4)
+	_live_stylebox.set_corner_radius_all(4)
+	_live_stylebox.set_expand_margin_all(4) 
+
+	# COMPLETED (Green)
+	_completed_stylebox = StyleBoxFlat.new()
+	_completed_stylebox.bg_color = Color(0.2, 0.8, 0.2, 0.1)
+	_completed_stylebox.border_color = Color(0.2, 0.8, 0.2, 0.8)
+	_completed_stylebox.set_border_width_all(2)
+	_completed_stylebox.set_corner_radius_all(4)
+	_completed_stylebox.set_expand_margin_all(2)
+
+	# FAILED (Red)
+	_failed_stylebox = StyleBoxFlat.new()
+	_failed_stylebox.bg_color = Color(0.8, 0.2, 0.2, 0.1)
+	_failed_stylebox.border_color = Color(0.8, 0.2, 0.2, 0.8)
+	_failed_stylebox.set_border_width_all(2)
+	_failed_stylebox.set_corner_radius_all(4)
+	_failed_stylebox.set_expand_margin_all(2)
+
+func _stop_all_debug_tweens() -> void:
+	for t in _active_debug_nodes.values():
+		if is_instance_valid(t): t.kill()
+	_active_debug_nodes.clear()
 
 func _on_debug_session_started():
 	_live_debugging_active = true
 	_clear_all_highlights()
 	_completed_node_ids.clear()
-	_live_node_id = ""
+	_failed_node_ids.clear()
+	_live_node_ids.clear()
+	_stop_all_debug_tweens()
 
 func _on_debug_session_ended():
 	_live_debugging_active = false
 	_clear_all_highlights()
-	if is_instance_valid(_live_pulse_tween):
-		_live_pulse_tween.kill()
+	_live_node_ids.clear()
+	_stop_all_debug_tweens()
 
 func _on_debug_node_activated(node_id: String):
 	if not _live_debugging_active: return
-	if _completed_node_ids.has(_live_node_id):
-		_update_node_style(_live_node_id, _completed_stylebox)
-	else:
-		_update_node_style(_live_node_id, null)
-	if is_instance_valid(_live_pulse_tween):
-		_live_pulse_tween.kill()
-	_live_node_id = node_id
-	_update_node_style(_live_node_id, _live_stylebox)
+	if _completed_node_ids.has(node_id): _completed_node_ids.erase(node_id)
+	
+	_live_node_ids[node_id] = true # remember state
+	
+	# Visuals
+	_update_node_style(node_id, _live_stylebox)
 	_pulse_live_node(node_id)
 
 func _on_debug_node_completed(node_id: String):
 	if not _live_debugging_active: return
-	if node_id == _live_node_id:
-		_live_node_id = ""
-		if is_instance_valid(_live_pulse_tween):
-			_live_pulse_tween.kill()
+	
+	# Stop pulsing tween
+	if _active_debug_nodes.has(node_id):
+		var t = _active_debug_nodes[node_id]
+		if is_instance_valid(t): t.kill()
+		_active_debug_nodes.erase(node_id)
+	
+	if _live_node_ids.has(node_id): _live_node_ids.erase(node_id) # erase from list
+
+	# Mark as completed
 	_completed_node_ids[node_id] = true
 	_update_node_style(node_id, _completed_stylebox)
+
+func _on_debug_node_failed(node_id: String):
+	if not _live_debugging_active: return
+	
+	if _active_debug_nodes.has(node_id):
+		var t = _active_debug_nodes[node_id]
+		if is_instance_valid(t): t.kill()
+		_active_debug_nodes.erase(node_id)
+	
+	if _live_node_ids.has(node_id): _live_node_ids.erase(node_id)
+	
+	_failed_node_ids[node_id] = true
+	_update_node_style(node_id, _failed_stylebox)
 
 func _update_node_style(node_id: String, style: StyleBox):
 	if node_id.is_empty(): return
@@ -425,7 +488,7 @@ func _update_node_style(node_id: String, style: StyleBox):
 		visual_node.set("theme_override_styles/panel", style)
 
 func _clear_all_highlights():
-	if is_instance_valid(graph_controller) and graph_controller.is_visible_in_tree():
+	if is_instance_valid(graph_controller):
 		for child in graph_controller.get_children():
 			if child is GraphNode:
 				child.set("theme_override_styles/panel", null)
@@ -433,13 +496,58 @@ func _clear_all_highlights():
 func _pulse_live_node(node_id: String):
 	var visual_node = graph_controller.get_node_or_null(NodePath(node_id))
 	if not is_instance_valid(visual_node): return
-	var new_stylebox: StyleBoxFlat = _live_stylebox.duplicate(true)
-	visual_node.set("theme_override_styles/panel", new_stylebox)
-	_live_pulse_tween = create_tween().set_loops()
-	_live_pulse_tween.tween_property(new_stylebox, "bg_color", _live_stylebox.bg_color.lightened(0.2), 0.7)\
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_live_pulse_tween.tween_property(new_stylebox, "bg_color", _live_stylebox.bg_color, 0.7)\
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	
+	# Performance fix
+	if _active_debug_nodes.has(node_id):
+		var existing_tween = _active_debug_nodes[node_id]
+		if is_instance_valid(existing_tween) and existing_tween.is_running():
+			return
+	
+	# Create a unique copy of the stylebox so we don't animate ALL active nodes in sync
+	var unique_style: StyleBoxFlat = _live_stylebox.duplicate()
+	visual_node.set("theme_override_styles/panel", unique_style)
+	
+	var tween = create_tween().set_loops()
+	_active_debug_nodes[node_id] = tween
+	
+	var start_col = _live_stylebox.border_color
+	var end_col = start_col
+	end_col.a = 0.3 # Fade out
+	
+	var node_ref = weakref(visual_node)
+	
+	tween.tween_method(
+		func(val: Color): 
+			var node = node_ref.get_ref()
+			if node: # Check if node is still alive
+				unique_style.border_color = val
+				node.queue_redraw(), 
+		start_col, end_col, 0.6
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	
+	tween.tween_method(
+		func(val: Color): 
+			var node = node_ref.get_ref()
+			if node:
+				unique_style.border_color = val
+				node.queue_redraw(), 
+		end_col, start_col, 0.6
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _restore_highlights_on_graph_change():
+	# If user switches graph tabs while game is running, restore the visuals
+	# 1. Completed & Failed
+	for node_id in _completed_node_ids:
+		_update_node_style(node_id, _completed_stylebox)
+	for node_id in _failed_node_ids:
+		_update_node_style(node_id, _failed_stylebox)
+	
+	# 2. Active Nodes (Pulsing restart)
+	for node_id in _live_node_ids:
+		_update_node_style(node_id, _live_stylebox)
+		_pulse_live_node(node_id)
+
+# -------
 
 func _scan_and_edit_new_graph(path: String):
 	_runtime_scan_filesystem() 

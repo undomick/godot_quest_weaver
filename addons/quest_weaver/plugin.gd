@@ -184,6 +184,9 @@ func _connect_signals() -> void:
 			debugger_node.node_activated_in_game.connect(main_view._on_debug_node_activated)
 		if not debugger_node.node_completed_in_game.is_connected(main_view._on_debug_node_completed):
 			debugger_node.node_completed_in_game.connect(main_view._on_debug_node_completed)
+		if debugger_node.has_signal("node_failed_in_game"):
+			if not debugger_node.node_failed_in_game.is_connected(main_view._on_debug_node_failed):
+				debugger_node.node_failed_in_game.connect(main_view._on_debug_node_failed)
 
 func _disconnect_signals() -> void:
 	if not Engine.is_editor_hint(): return 
@@ -212,6 +215,8 @@ func _disconnect_signals() -> void:
 			debugger_node.node_activated_in_game.disconnect(main_view._on_debug_node_activated)
 		if debugger_node.node_completed_in_game.is_connected(main_view._on_debug_node_completed):
 			debugger_node.node_completed_in_game.disconnect(main_view._on_debug_node_completed)
+		if debugger_node.node_failed_in_game.is_connected(main_view._on_debug_node_failed):
+			debugger_node.node_failed_in_game.disconnect(main_view._on_debug_node_failed)
 
 func _on_filesystem_changed() -> void:
 	if not Engine.is_editor_hint(): return 

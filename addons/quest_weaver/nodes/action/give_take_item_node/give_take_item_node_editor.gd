@@ -5,6 +5,7 @@ extends NodePropertyEditorBase
 @onready var item_id_edit: AutoCompleteLineEdit = %ItemIDEdit
 @onready var amount_spinbox: SpinBox = %AmountSpinBox
 @onready var action_picker: OptionButton = %ActionPicker
+@onready var terminal_checkbox: CheckBox = %TerminalCheckBox
 
 var _is_setting_up := false
 
@@ -13,6 +14,12 @@ func _ready() -> void:
 	item_id_edit.text_submitted.connect(_on_item_id_confirmed)
 	amount_spinbox.value_changed.connect(_on_amount_changed)
 	action_picker.item_selected.connect(_on_action_changed)
+	terminal_checkbox.toggled.connect(_on_terminal_toggled)
+	
+	# --- TOOLTIPS ---
+	item_id_edit.tooltip_text = "The unique identifier of the item.\nMust match an ID in your Inventory System or Item Registry."
+	amount_spinbox.tooltip_text = "The quantity of items to process.\nMust be greater than 0."
+	action_picker.tooltip_text = "Determines the operation:\n- Give: Adds items to the player's inventory (Always succeeds).\n- Take: Removes items (Fails and triggers 'Failure' port if not enough items exist)."
 
 func set_node_data(node_data: GraphNodeResource) -> void:
 	super.set_node_data(node_data)
@@ -31,6 +38,8 @@ func set_node_data(node_data: GraphNodeResource) -> void:
 	for action_name in node_data.Action.keys():
 		action_picker.add_item(action_name)
 	action_picker.select(node_data.action)
+	
+	terminal_checkbox.button_pressed = node_data.is_terminal
 	
 	call_deferred("_finish_setup")
 
@@ -51,3 +60,9 @@ func _on_action_changed(index: int) -> void:
 	if _is_setting_up: return
 	if is_instance_valid(edited_node_data) and edited_node_data.action != index:
 		property_update_requested.emit(edited_node_data.id, "action", index)
+
+func _on_terminal_toggled(pressed: bool) -> void:
+	if is_instance_valid(edited_node_data) and edited_node_data.is_terminal != pressed:
+		property_update_requested.emit(edited_node_data.id, "is_terminal", pressed)
+		edited_node_data.is_terminal = pressed
+		edited_node_data._update_ports_from_data()

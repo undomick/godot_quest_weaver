@@ -13,7 +13,13 @@ extends GraphNodeResource
 func _init():
 	category = "Logic"
 	input_ports = ["In"]
-	output_ports = ["Out"]
+	_update_ports_from_data()
+
+func _update_ports_from_data() -> void:
+	if is_terminal:
+		output_ports = []
+	else:
+		output_ports = ["Out"]
 
 func get_editor_summary() -> String:
 	var path_text = quest_graph_path.get_file() if not quest_graph_path.is_empty() else "(Not Set)"
@@ -35,6 +41,7 @@ func from_dictionary(data: Dictionary):
 	super.from_dictionary(data)
 	self.quest_graph_path = data.get("quest_graph_path", "")
 	self.wait_for_completion = data.get("wait_for_completion", true)
+	_update_ports_from_data()
 
 func determine_default_size() -> QWNodeSizes.Size:
 	return QWNodeSizes.Size.SMALL

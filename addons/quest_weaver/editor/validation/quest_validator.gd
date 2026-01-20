@@ -117,8 +117,8 @@ func _validate_node_connections(node: GraphNodeResource, graph: QuestGraphResour
 		if not _is_port_connected(graph, node.id, i):
 			var port_name = node.output_ports[i]
 			results.append(ValidationResult.new(
-				ValidationResult.Severity.ERROR, 
-				"Output port '%s' is not connected. The quest flow will stop here." % port_name, 
+				ValidationResult.Severity.WARNING, 
+				"Output port '%s' is unconnected. Flow stops here." % port_name, 
 				node.id
 			))
 			

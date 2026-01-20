@@ -2,73 +2,113 @@
 class_name QuestStatePersistenceManager
 extends RefCounted
 
-## Collects the entire state of the quest system and packs it into a serializable Dictionary.
+const SAVE_VERSION = "1.0"
+
 func save_state(controller: QuestController) -> Dictionary:
-	var save_data := {
-		"version": 2, # for data migration in the future
-		"active_quests": controller._active_quests.duplicate(true),
-		"objective_progress": {},
-		"active_timers": controller._timer_manager.get_save_data(),
-		"active_listeners": controller._event_manager.get_save_data(),
-		"active_synchronizers": controller._sync_manager.get_save_data(),
-		"scopes": controller._scope_manager.get_save_data()
+	var instances_data: Array[Dictionary] = []
+	for instance: QuestInstance in controller._active_instances.values():
+		if is_instance_valid(instance):
+			instances_data.append(instance.get_save_data())
+	
+	return {
+		"version": SAVE_VERSION,
+		"instances": instances_data
 	}
 
-	for node_instance in controller._active_nodes.values():
-		if node_instance is TaskNodeResource:
-			var obj_progress_dict := {}
-			for objective in node_instance.objectives:
-				if objective.required_progress > 1 and objective.current_progress > 0:
-					obj_progress_dict[objective.id] = objective.current_progress
-			
-			if not obj_progress_dict.is_empty():
-				save_data.objective_progress[node_instance.id] = obj_progress_dict
-	
-	var logger = controller._get_logger()
-	if logger:
-		logger.log("SaveLoad", "Save data (v2) created.")
-	
-	return save_data
-
 func load_state(controller: QuestController, data: Dictionary) -> void:
+	var logger = controller._get_logger()
+	if logger: logger.log("SaveLoad", "Loading quest state...")
+
 	controller.reset_all_graphs_and_quests()
-	controller._active_quests = data.get("active_quests", {}).duplicate(true)
 	
-	var quests_to_restart = []
-	for quest_id in controller._active_quests:
-		if controller._active_quests[quest_id].status == QWEnums.QuestState.ACTIVE:
-			quests_to_restart.append(quest_id)
-			
-	if quests_to_restart.is_empty():
-		var logger = controller._get_logger()
-		if logger:
-			logger.log("SaveLoad", "Restoration complete. No active quests to restart.")
-		return
+	var instances_data = data.get("instances", [])
+	if not instances_data is Array: return
+
+	for inst_data in instances_data:
+		# Instanz laden
+		var instance = QuestInstance.new("") 
+		instance.load_save_data(inst_data)
 		
-	for quest_id in quests_to_restart:
-		if controller._quest_id_to_context_node_map.has(quest_id):
-			var context_node: QuestContextNodeResource = controller._quest_id_to_context_node_map[quest_id]
-			controller._activate_node(context_node)
-		else:
-			push_warning("Could not restore quest '%s': Found no ContextNode." % quest_id)
+		# Validation: Prüfen ob die Definition existiert
+		# Wir nutzen die generische Map im Controller (siehe Controller-Anpassung)
+		if not controller._id_to_context_node_map.has(instance.file_id):
+			if logger: logger.warn("SaveLoad", "Loaded quest '%s' but no definition found. Skipping." % instance.file_id)
+			continue
 			
-	await controller.get_tree().process_frame
+		# Registrieren unter FILE ID
+		controller._active_instances[instance.file_id] = instance
 
-	var saved_objective_progress = data.get("objective_progress", {})
-	for node_id in saved_objective_progress:
-		if controller._active_nodes.has(node_id):
-			var node_instance: TaskNodeResource = controller._active_nodes[node_id]
-			var progress_data = saved_objective_progress[node_id]
-			for objective_id in progress_data:
-				for objective in node_instance.objectives:
-					if objective.id == objective_id:
-						objective.current_progress = progress_data[objective_id]
-						break
+	# Restore Runtime Hooks
+	if is_instance_valid(controller._timer_manager):
+		controller._timer_manager.restore_timers_from_instances(controller._active_instances)
+		
+	_restore_event_listeners(controller)
+	
+	# Notify UI
+	for file_id in controller._active_instances:
+		var inst = controller._active_instances[file_id]
+		# Signal mit Logical ID senden (falls vorhanden), sonst File ID
+		var signal_id = inst.quest_id if not inst.quest_id.is_empty() else inst.file_id
+		controller.quest_data_changed.emit(signal_id)
 
-	controller._timer_manager.load_save_data(data.get("active_timers", {}), controller._active_nodes)
-	controller._event_manager.load_save_data(data.get("active_listeners", {}))
-	controller._sync_manager.load_save_data(data.get("active_synchronizers", {}))
-	controller._scope_manager.load_save_data(data.get("scopes", {}))
+	if logger: logger.log("SaveLoad", "Load complete. %d quests restored." % controller._active_instances.size())
 
-	for quest_id in controller._active_quests:
-		controller.quest_data_changed.emit(quest_id)
+func _restore_event_listeners(controller: QuestController) -> void:
+	var event_manager = controller._event_manager
+	if not is_instance_valid(event_manager): return
+	
+	event_manager.clear()
+	
+	for instance: QuestInstance in controller._active_instances.values():
+		for node_id in instance.active_node_ids:
+			var node_def = controller._node_definitions.get(node_id)
+			
+			if node_def is EventListenerNodeResource:
+				event_manager.register_listener(node_def)
+			elif node_def is TaskNodeResource:
+				_restore_task_listeners(controller, node_def, instance)
+
+func _restore_task_listeners(controller: QuestController, task_node: TaskNodeResource, instance: QuestInstance):
+	var context = controller._execution_context
+	if not is_instance_valid(context): return
+	
+	for objective in task_node.objectives:
+		if instance.get_objective_status(objective.id) == 2:
+			continue
+		
+		# Resolve Params from Instance Variables (which are already loaded at this point)
+		var resolved_params = {}
+		for key in objective.trigger_params:
+			resolved_params[key] = instance.resolve_parameter(objective.trigger_params[key])
+
+		var wrapper = {
+			"objective": objective,
+			"file_id": instance.file_id,
+			"task_node_id": task_node.id,
+			"resolved_params": resolved_params
+		}
+		
+		match objective.trigger_type:
+			ObjectiveResource.TriggerType.ITEM_COLLECT:
+				var item_id = resolved_params.get("item_id")
+				if item_id: _add_listener(context.item_objective_listeners, str(item_id), wrapper)
+			
+			ObjectiveResource.TriggerType.KILL:
+				var enemy_id = resolved_params.get("enemy_id")
+				if enemy_id: _add_listener(context.kill_objective_listeners, str(enemy_id), wrapper)
+				
+			ObjectiveResource.TriggerType.INTERACT:
+				var target = resolved_params.get("target_path")
+				if target: _add_listener(context.interact_objective_listeners, str(target), wrapper)
+				
+			ObjectiveResource.TriggerType.LOCATION_ENTER:
+				var loc = resolved_params.get("location_id")
+				if loc: _add_listener(context.location_objective_listeners, str(loc), wrapper)
+
+func _add_listener(dict: Dictionary, key: String, wrapper: Dictionary):
+	if not dict.has(key): dict[key] = []
+	# Duplikat-Check vergleicht jetzt Wrapper-Inhalte
+	for existing in dict[key]:
+		if existing.file_id == wrapper.file_id and existing.objective == wrapper.objective:
+			return
+	dict[key].append(wrapper)

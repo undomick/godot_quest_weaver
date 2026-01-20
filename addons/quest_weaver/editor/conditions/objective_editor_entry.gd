@@ -34,6 +34,13 @@ func _ready():
 		
 	copy_id_button.icon = get_theme_icon("Duplicate", "EditorIcons")
 	copy_id_button.pressed.connect(_on_copy_id_pressed)
+	
+	# --- TOOLTIPS (STATIC) ---
+	id_line_edit.tooltip_text = "Unique internal ID. Used by 'Set Objective Node' or scripts to reference this specific objective."
+	copy_id_button.tooltip_text = "Copy ID to clipboard."
+	description_edit.tooltip_text = "Text shown in the Quest Log.\nSupports variables like '{amount}' or '{target}' if set in the Quest Instance."
+	trigger_type_picker.tooltip_text = "Determines how this objective is updated.\n- Manual: Via Script/Nodes\n- Item Collect: Inventory Adapter\n- Kill/Interact/Location: Global Events"
+	track_progress_checkbox.tooltip_text = "If checked: Counts only items collected AFTER this task started (Delta).\nIf unchecked: Checks if the player has the total amount in inventory (Absolute)."
 
 func set_objective(obj_res: ObjectiveResource):
 	_is_setting_up = true
@@ -56,12 +63,20 @@ func _rebuild_trigger_param_ui():
 	
 	match objective_resource.trigger_type:
 		ObjectiveResource.TriggerType.ITEM_COLLECT:
+			# 1. Item ID
 			var item_id_completer = _create_param_completer("item_id")
 			QWEditorUtils.populate_item_completer(item_id_completer)
+			
+			item_id_completer.tooltip_text = "The unique ID of the item to collect.\nThis ID must exist in your Inventory System / Item Registry."
 			add_param_row("Item ID", item_id_completer)
 			
-			var amount_spinbox = _create_param_spinbox("amount")
-			add_param_row("Amount", amount_spinbox)
+			# 2. Amount
+			var amount_edit = _create_param_line_edit("amount")
+			if amount_edit.text.is_empty(): amount_edit.text = "1"
+			amount_edit.placeholder_text = "1 or {variable}"
+			
+			amount_edit.tooltip_text = "The quantity required to complete this objective.\n- Static: Enter a number (e.g. '5').\n- Dynamic: Enter a variable placeholder (e.g. '{wood_needed}')."
+			add_param_row("Amount", amount_edit)
 		
 		ObjectiveResource.TriggerType.LOCATION_ENTER, ObjectiveResource.TriggerType.INTERACT, ObjectiveResource.TriggerType.KILL:
 			var key_map = {
@@ -71,33 +86,56 @@ func _rebuild_trigger_param_ui():
 			}
 			var param_key = key_map[objective_resource.trigger_type]
 			var param_edit = _create_param_line_edit(param_key)
+			
+			# Context-specific tooltips for the main ID field
+			if objective_resource.trigger_type == ObjectiveResource.TriggerType.KILL:
+				param_edit.tooltip_text = "The ID of the enemy.\nMust match the ID passed to the 'enemy_was_killed' signal."
+			elif objective_resource.trigger_type == ObjectiveResource.TriggerType.INTERACT:
+				param_edit.tooltip_text = "The stringified Node Path or unique ID of the object.\nMust match the node passed to the 'interacted_with_object' signal."
+			elif objective_resource.trigger_type == ObjectiveResource.TriggerType.LOCATION_ENTER:
+				param_edit.tooltip_text = "The unique ID of the location.\nMust match the ID passed to the 'entered_location' signal."
+			
 			add_param_row(param_key.replace("_", " ").capitalize(), param_edit)
 
+			# 3. Kill Count (Special case for Kill trigger)
 			if objective_resource.trigger_type == ObjectiveResource.TriggerType.KILL:
-				var amount_spinbox = _create_direct_property_spinbox("required_progress")
-				add_param_row("Required", amount_spinbox)
+				var amount_edit = _create_param_line_edit("amount")
+				
+				# Fallback logic for old data
+				if amount_edit.text.is_empty() and objective_resource.required_progress > 1:
+					amount_edit.text = str(objective_resource.required_progress)
+				elif amount_edit.text.is_empty():
+					amount_edit.text = "1"
+					
+				amount_edit.placeholder_text = "1 or {variable}"
+				amount_edit.tooltip_text = "The number of enemies to kill.\n- Static: Enter a number (e.g. '10').\n- Dynamic: Enter a variable (e.g. '{kill_count}')."
+				add_param_row("Required", amount_edit)
 	
+	# Only show the "Track Progress" checkbox for Item Collect
 	track_progress_checkbox.visible = (objective_resource.trigger_type == ObjectiveResource.TriggerType.ITEM_COLLECT)
 
 # --- UI Creation Helper Functions ---
 
 func _create_param_completer(param_name: String) -> AutoCompleteLineEdit:
 	var completer = QWConstants.AutoCompleteLineEditScene.instantiate()
-	completer.text = objective_resource.trigger_params.get(param_name, "")
+	completer.text = str(objective_resource.trigger_params.get(param_name, ""))
 	completer.text_submitted.connect(_on_param_changed.bind(param_name))
 	return completer
 
 func _create_param_line_edit(param_name: String) -> LineEdit:
 	var line_edit = LineEdit.new()
+	# Ensure we convert whatever is in the dict to string for the UI
 	line_edit.text = str(objective_resource.trigger_params.get(param_name, ""))
 	line_edit.text_submitted.connect(_on_param_changed.bind(param_name))
 	line_edit.focus_exited.connect(func(): _on_param_changed(line_edit.text, param_name))
 	return line_edit
 
+# (Spinbox helper removed or unused for amount now, kept only if needed for other types in future)
 func _create_param_spinbox(param_name: String) -> SpinBox:
 	var spinbox = SpinBox.new()
 	spinbox.min_value = 1; spinbox.step = 1; spinbox.allow_greater = true
-	spinbox.set_value_no_signal(objective_resource.trigger_params.get(param_name, 1))
+	var val = objective_resource.trigger_params.get(param_name, 1)
+	spinbox.set_value_no_signal(float(val) if str(val).is_valid_float() else 1.0)
 	
 	spinbox.value_changed.connect(_on_param_spinbox_changed.bind(param_name))
 	return spinbox
@@ -129,7 +167,8 @@ func _on_track_progress_toggled(is_pressed: bool):
 
 func _on_param_changed(new_value_text: String, param_name: String):
 	if _is_setting_up: return
-	if objective_resource.trigger_params.get(param_name, "") != new_value_text:
+	# Always save as String in dictionary to support "{variables}"
+	if str(objective_resource.trigger_params.get(param_name, "")) != new_value_text:
 		trigger_param_changed.emit(param_name, new_value_text)
 
 func _on_param_spinbox_changed(value: float, param_name: String):

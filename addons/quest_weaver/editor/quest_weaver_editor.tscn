@@ -38,20 +38,10 @@ theme_override_constants/margin_bottom = 3
 [node name="HSplitContainer" type="HSplitContainer" parent="MarginContainer"]
 layout_mode = 2
 
-[node name="VSplitContainer" type="VSplitContainer" parent="MarginContainer/HSplitContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 2.0
-
-[node name="SidePanel" parent="MarginContainer/HSplitContainer/VSplitContainer" instance=ExtResource("3_avfb5")]
+[node name="SidePanel" parent="MarginContainer/HSplitContainer" instance=ExtResource("3_avfb5")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-
-[node name="LocalizatonButton" type="Button" parent="MarginContainer/HSplitContainer/VSplitContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Update Localization Keys"
 
 [node name="HSplitContainer" type="HSplitContainer" parent="MarginContainer/HSplitContainer"]
 custom_minimum_size = Vector2(700, 0)
@@ -66,6 +56,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 8.0
 theme = ExtResource("4_wklog")
+scroll_offset = Vector2(-312, 0)
 grid_pattern = 1
 snapping_distance = 10
 right_disconnects = true

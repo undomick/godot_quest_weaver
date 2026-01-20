@@ -38,7 +38,13 @@ enum AnimationPreset {
 func _init():
 	category = "Action"
 	input_ports = ["In"]
-	output_ports = ["Out"]
+	_update_ports_from_data()
+
+func _update_ports_from_data() -> void:
+	if is_terminal:
+		output_ports = []
+	else:
+		output_ports = ["Out"]
 
 func get_editor_summary() -> String:
 	var type_text = str(message_type)
@@ -89,3 +95,4 @@ func from_dictionary(data: Dictionary):
 	self.delay_title_message = data.get("delay_title_message", 0.1)
 	self.hold_duration = data.get("hold_duration", 3.0)
 	self.character_stagger_ms = data.get("character_stagger_ms", 40)
+	_update_ports_from_data()

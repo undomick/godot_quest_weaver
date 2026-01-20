@@ -26,6 +26,8 @@ extends NodePropertyEditorBase
 @onready var hold_duration_spinbox: SpinBox = %HoldDurationSpinBox
 @onready var character_stagger_spinbox: SpinBox = %CharacterStaggerSpinBox
 
+@onready var terminal_checkbox: CheckBox = %TerminalCheckBox
+
 var _registry_keys: Array[String] = []
 var _spinbox_undo_values: Dictionary = {}
 
@@ -45,7 +47,9 @@ func _ready() -> void:
 	anim_out_picker.item_selected.connect(_on_anim_out_selected)
 	ease_out_picker.item_selected.connect(_on_ease_out_selected)
 	per_character_out_checkbox.toggled.connect(_on_per_char_out_toggled)
-
+	
+	terminal_checkbox.toggled.connect(_on_terminal_toggled)
+	
 	_connect_spinbox_signals(duration_in_spinbox, "duration_in")
 	_connect_spinbox_signals(duration_out_spinbox, "duration_out")
 	_connect_spinbox_signals(delay_title_message_spinbox, "delay_title_message")
@@ -90,6 +94,7 @@ func set_node_data(node_data: GraphNodeResource) -> void:
 	delay_title_message_spinbox.set_value_no_signal(node_data.delay_title_message)
 	hold_duration_spinbox.set_value_no_signal(node_data.hold_duration)
 	character_stagger_spinbox.set_value_no_signal(node_data.character_stagger_ms)
+	terminal_checkbox.button_pressed = node_data.is_terminal
 	
 	_update_ui_visibility()
 
@@ -172,6 +177,12 @@ func _populate_ease_pickers():
 	for ease_name in ease_names:
 		ease_in_picker.add_item(ease_name)
 		ease_out_picker.add_item(ease_name)
+
+func _on_terminal_toggled(pressed: bool) -> void:
+	if is_instance_valid(edited_node_data) and edited_node_data.is_terminal != pressed:
+		property_update_requested.emit(edited_node_data.id, "is_terminal", pressed)
+		edited_node_data.is_terminal = pressed
+		edited_node_data._update_ports_from_data()
 
 func _update_ui_visibility():
 	if not is_instance_valid(edited_node_data): return

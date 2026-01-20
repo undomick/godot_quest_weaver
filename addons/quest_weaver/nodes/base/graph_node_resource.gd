@@ -3,15 +3,12 @@
 class_name GraphNodeResource
 extends Resource
 
-# The runtime status of this node.
-enum Status { INACTIVE, ACTIVE, LOCKED, COMPLETED }
-var status: Status = Status.INACTIVE
-
 @export var id: String
 @export var category: String = "Default"
 @export var graph_position: Vector2
 @export var input_ports: Array[String] = ["In"]
 @export var output_ports: Array[String] = ["Out"]
+@export var is_terminal: bool = false # disables output
 
 ## Provides a brief, human-readable summary for display in the graph editor.
 func get_editor_summary() -> String:
@@ -35,7 +32,8 @@ func to_dictionary() -> Dictionary:
 		"category": category,
 		"graph_position": graph_position,
 		"input_ports": input_ports,
-		"output_ports": output_ports
+		"output_ports": output_ports,
+		"is_terminal": is_terminal
 	}
 
 func from_dictionary(data: Dictionary):
@@ -44,6 +42,7 @@ func from_dictionary(data: Dictionary):
 	self.graph_position = data.get("graph_position")
 	self.input_ports = data.get("input_ports")
 	self.output_ports = data.get("output_ports")
+	self.is_terminal = data.get("is_terminal", false)
 
 ## Virtual method for validation.
 ## 'context' contains references to 'item_registry' and 'quest_registry'.

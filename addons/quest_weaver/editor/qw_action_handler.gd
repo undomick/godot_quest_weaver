@@ -58,6 +58,10 @@ func on_node_property_update_requested(node_id: String, property_name: String, n
 	var target_resource = sub_resource if is_instance_valid(sub_resource) else editable_graph.nodes.get(node_id)
 	if not is_instance_valid(target_resource): return
 
+	if property_name == "is_terminal" and new_value == true and sub_resource == null:
+		_handle_terminal_toggle(editable_graph, node_id, target_resource)
+		return
+
 	var command = ChangePropertyCommand.new(target_resource, property_name, new_value)
 	_history.execute_command(command)
 	
@@ -171,8 +175,26 @@ func on_disconnection_request(from_node: StringName, from_port: int, to_node: St
 func on_nodes_deleted(node_ids: Array[StringName]) -> void:
 	var editable_graph = _data_manager.make_active_graph_editable()
 	if not is_instance_valid(editable_graph): return
+	
+	# --- SECURITY CHECK ---
+	var filtered_ids: Array[StringName] = []
+	
+	for id_name in node_ids:
+		var id_str = String(id_name)
+		var node_data = editable_graph.nodes.get(id_str)
 		
-	var command = DeleteNodesCommand.new(_editor, editable_graph, node_ids)
+		# Check if the node is protected (StartNode)
+		if node_data is StartNodeResource:
+			push_warning("QuestWeaver: Cannot delete the Start Node.")
+			continue
+			
+		filtered_ids.append(id_name)
+	
+	if filtered_ids.is_empty():
+		return
+	# ----------------------
+		
+	var command = DeleteNodesCommand.new(_editor, editable_graph, filtered_ids)
 	_history.execute_command(command)
 
 	if _properties_panel.has_method("clear_inspection"):
@@ -217,3 +239,29 @@ func save_all_modified_graphs() -> void:
 		
 	for path in unsaved_paths:
 		_editor.save_single_file(path)
+
+
+func _handle_terminal_toggle(graph: QuestGraphResource, node_id: String, node_resource: GraphNodeResource) -> void:
+	var composite = CompositeCommand.new()
+	var connections_to_remove: Array[Dictionary] = []
+	for conn in graph.connections:
+		if conn.from_node == node_id:
+			connections_to_remove.append(conn)
+	
+	for conn in connections_to_remove:
+		# is_connect_action = false (Disconnect)
+		var disconnect_cmd = ConnectionCommand.new(
+			_editor, graph, 
+			conn.from_node, conn.from_port, 
+			conn.to_node, conn.to_port, 
+			false
+		)
+		composite.add_command(disconnect_cmd)
+
+	var prop_cmd = ChangePropertyCommand.new(node_resource, "is_terminal", true)
+	composite.add_command(prop_cmd)
+
+	_history.execute_command(composite)
+
+	node_data_changed.emit(node_id, "is_terminal")
+	_graph_controller.call_deferred("grab_focus")

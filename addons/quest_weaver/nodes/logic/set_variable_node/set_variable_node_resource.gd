@@ -17,7 +17,13 @@ enum Operator { SET, ADD, SUBTRACT, MULTIPLY, DIVIDE, TOGGLE }
 func _init():
 	category = "Logic" 
 	input_ports = ["In"]
-	output_ports = ["Out"]
+	_update_ports_from_data()
+
+func _update_ports_from_data() -> void:
+	if is_terminal:
+		output_ports = []
+	else:
+		output_ports = ["Out"]
 
 func get_editor_summary() -> String:
 	var op_text: String
@@ -69,6 +75,7 @@ func from_dictionary(data: Dictionary):
 	self.variable_name = data.get("variable_name", "")
 	self.value_to_set_string = data.get("value_to_set_string", "")
 	self.operator = _defensive_load(data, "operator", Operator.keys(), Operator.SET)
+	_update_ports_from_data()
 
 ## PRIVATE METHOD: Checks if an integer value is valid for the enum type.
 func _defensive_load(data: Dictionary, prop: String, keys: Array, default_val: int) -> int:

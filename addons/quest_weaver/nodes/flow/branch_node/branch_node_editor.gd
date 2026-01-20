@@ -12,6 +12,15 @@ const ConditionEditorScene = preload("res://addons/quest_weaver/editor/condition
 func _ready() -> void:
 	operator_picker.item_selected.connect(_on_operator_changed)
 	add_button.pressed.connect(_on_add_condition_pressed)
+	
+	# --- TOOLTIPS ---
+	operator_picker.tooltip_text = "Determines how the list of conditions is evaluated:\n" + \
+		"- AND: All conditions must be true.\n" + \
+		"- OR: At least one condition must be true.\n" + \
+		"- NAND: Returns true if at least one condition is false (Not AND).\n" + \
+		"- NOR: Returns true only if all conditions are false (Not OR)."
+	
+	add_button.tooltip_text = "Add a new condition to evaluate."
 
 func set_node_data(node_data: GraphNodeResource) -> void:
 	super.set_node_data(node_data)

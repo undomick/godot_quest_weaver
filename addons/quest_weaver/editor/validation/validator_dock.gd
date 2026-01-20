@@ -29,9 +29,9 @@ func _ready():
 	results_tree.set_column_expand(2, false) # Node: do not expand
 	
 	# Set minimum widths for better readability
-	results_tree.set_column_custom_minimum_width(0, 80)  # Fixed width for Severity icon/text
+	results_tree.set_column_custom_minimum_width(0, 120)  # Fixed width for Severity icon/text
 	results_tree.set_column_custom_minimum_width(1, 200) # Minimum for Message
-	results_tree.set_column_custom_minimum_width(2, 120) # Fixed width for Node ID
+	results_tree.set_column_custom_minimum_width(2, 200) # Fixed width for Node ID
 	
 	validate_button.pressed.connect(_on_validate_button_pressed)
 	results_tree.item_selected.connect(_on_results_tree_item_selected)

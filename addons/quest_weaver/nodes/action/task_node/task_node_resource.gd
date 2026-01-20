@@ -14,6 +14,15 @@ func _init():
 		new_objective.id = "objective_%d" % Time.get_unix_time_from_system()
 		new_objective.description = "New Objective"
 		objectives.append(new_objective)
+	
+	input_ports = ["In"]
+	_update_ports_from_data()
+
+func _update_ports_from_data() -> void:
+	if is_terminal:
+		output_ports = []
+	else:
+		output_ports = ["Out"]
 
 func get_editor_summary() -> String:
 	if objectives.is_empty():
@@ -120,6 +129,8 @@ func from_dictionary(data: Dictionary):
 			var new_objective = load(script_path).new()
 			new_objective.from_dictionary(objective_dict)
 			self.objectives.append(new_objective)
+	
+	_update_ports_from_data()
 
 func _validate(context: Dictionary) -> Array[ValidationResult]:
 	var results: Array[ValidationResult] = []

@@ -34,22 +34,14 @@ func initialize(p_editor: QuestWeaverEditor, p_registry: NodeTypeRegistry, p_dat
 		_add_node_menu.node_selected.connect(_on_node_selected_from_menu)
 
 
-func show_add_node_menu(screen_position: Vector2, connect_from_data: Dictionary = {}) -> void:
+func show_add_node_menu(graph_position: Vector2, connect_from_data: Dictionary = {}) -> void:
 	if not _is_initialized:
 		_add_node_menu.set_available_nodes(_node_registry.node_types)
 		_is_initialized = true
 	
-	var zoom = _graph_controller.zoom
-	var scroll = _graph_controller.scroll_offset
-	# Mouse position relative to the graph edit control
-	var local_mouse = _graph_controller.get_local_mouse_position()
-	
-	# Calculate graph-space coordinates: (Mouse / Zoom) + Scroll
-	_pending_node_creation_pos = (local_mouse / zoom) + scroll
-	
+	_pending_node_creation_pos = graph_position
 	_pending_connection_data = connect_from_data
 	
-	# Display popup menu at mouse screen coordinates
 	_add_node_menu.popup(Rect2i(get_viewport().get_mouse_position(), Vector2.ZERO))
 
 

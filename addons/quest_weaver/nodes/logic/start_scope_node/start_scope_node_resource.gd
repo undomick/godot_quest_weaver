@@ -8,8 +8,6 @@ extends GraphNodeResource
 ## 0 = infinite.
 @export_range(0, 100, 1) var max_executions: int = 0
 
-var current_executions: int = 0
-
 func _init():
 	category = "Logic"
 	input_ports = ["In"]

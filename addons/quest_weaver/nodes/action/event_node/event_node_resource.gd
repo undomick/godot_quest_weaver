@@ -19,7 +19,13 @@ class PayloadEntry extends Resource:
 func _init() -> void:
 	category = "Action" 
 	input_ports = ["In"]
-	output_ports = ["Out"]
+	_update_ports_from_data()
+
+func _update_ports_from_data() -> void:
+	if is_terminal:
+		output_ports = []
+	else:
+		output_ports = ["Out"]
 
 func get_editor_summary() -> String:
 	if event_name.is_empty():
@@ -77,6 +83,7 @@ func from_dictionary(data: Dictionary):
 		new_entry.value_string = entry_dict.get("value_string", "")
 		new_entry.value_type = entry_dict.get("value_type", PayloadEntry.Type.STRING)
 		self.payload_entries.append(new_entry)
+	_update_ports_from_data()
 
 func determine_default_size() -> QWNodeSizes.Size:
 	return QWNodeSizes.Size.SMALL

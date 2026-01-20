@@ -32,8 +32,12 @@ extends Resource
 @export_subgroup("Localization")
 ## Optional: Path to a CSV file for localization keys.
 ## If set, the 'Update Localization Keys' button will scan your quests and append new text keys to this file.
-## Localization Keys have to look like this to be considered: FIND_SOME_METAL_QUEST or HELLO_WORLD or QUEST001_MAMA_WILL_HELP
-@export_file("*.csv") var localization_csv_path: String
+## IMPORTANT: Enter the path manually if the file does not exist yet (e.g. 'res://localization.csv').
+@export var localization_csv_path: String = "res://localization.csv"
+
+## Define the language codes (columns) for your CSV file (e.g. "en", "de", "es").
+## The first column will always be "keys".
+@export var supported_locales: Array[String] = ["en"]
 
 # ==============================================================================
 # INTERNAL DATA (Hidden from Inspector)
