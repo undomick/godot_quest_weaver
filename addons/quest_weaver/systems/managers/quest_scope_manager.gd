@@ -4,13 +4,16 @@ extends RefCounted
 
 ## Manages Scopes. Stores iteration counts in QuestInstance variables.
 
-var _controller: QuestController
+var _controller_weak: WeakRef
 
 # Static Cache: { "scope_id": { "start_node_id": "...", "nodes_in_scope": ["...", "..."] } }
 var _scope_definitions: Dictionary = {} 
 
 func _init(p_controller: QuestController):
-	self._controller = p_controller
+	self._controller_weak = weakref(p_controller)
+
+func _get_controller() -> QuestController:
+	return _controller_weak.get_ref() as QuestController
 
 # --- 1. Initialization (Builds map of nodes inside each scope) ---
 
@@ -87,6 +90,7 @@ func handle_start_scope(node: StartScopeNodeResource, instance: QuestInstance) -
 	return false
 
 func handle_reset_scope(reset_node: ResetProgressNodeResource, instance: QuestInstance) -> Array[String]:
+	var controller = _get_controller()
 	var scope_id = reset_node.target_scope_id
 	var definition = _scope_definitions.get(scope_id)
 	
@@ -96,9 +100,10 @@ func handle_reset_scope(reset_node: ResetProgressNodeResource, instance: QuestIn
 	nodes_to_reset.assign(definition.nodes_in_scope)
 	
 	# Include EndNodes for cleanup
-	for node_def in _controller._node_definitions.values():
-		if node_def is EndScopeNodeResource and node_def.scope_id == scope_id:
-			nodes_to_reset.append(node_def.id)
+	if controller:
+		for node_def in controller._node_definitions.values():
+			if node_def is EndScopeNodeResource and node_def.scope_id == scope_id:
+				nodes_to_reset.append(node_def.id)
 
 	# If restarting, reset the execution counter in the Instance
 	if reset_node.restart_scope_on_completion:

@@ -44,12 +44,14 @@ func register_game_state(instance: Node) -> void:
 		_game_state_instance = instance
 		game_state_ready.emit()
 	else:
-		push_warning("[QuestWeaverServices] Attempted to register GameState instance multiple times.")
+		if logger: logger.warn("System", "Attempted to register GameState instance multiple times.")
+		else: push_warning("[QW] GameState double registration.")
 
 func has_game_state() -> bool:
 	return is_instance_valid(_game_state_instance)
 
 func get_game_state() -> Node:
 	if not is_instance_valid(_game_state_instance):
-		push_warning("[QuestWeaverServices] GameState was requested before it was registered.")
+		if logger: logger.warn("System", "GameState was requested before it was registered.")
+		else: push_warning("[QW] GameState requested too early.")
 	return _game_state_instance

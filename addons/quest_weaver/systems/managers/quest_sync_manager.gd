@@ -4,15 +4,21 @@ extends RefCounted
 
 ## Manages synchronization logic. State is stored in QuestInstance.
 
-var _controller: QuestController
+var _controller_weak: WeakRef
 
 func _init(p_controller: QuestController):
-	self._controller = p_controller
+	self._controller_weak = weakref(p_controller)
+
+func _get_controller() -> QuestController:
+	return _controller_weak.get_ref() as QuestController
 
 ## Called by SynchronizeNodeExecutor when an input is received.
 func handle_input(node_def: SynchronizeNodeResource, instance: QuestInstance, received_on_port: int) -> void:
+	var controller = _get_controller()
+	if not controller: return
+
 	var node_id = node_def.id
-	var logger = _controller._get_logger()
+	var logger = controller._get_logger()
 
 	# 1. Fetch State (or init)
 	# State Format: { "inputs_received": [false, false, true] }
@@ -51,7 +57,7 @@ func handle_input(node_def: SynchronizeNodeResource, instance: QuestInstance, re
 		if logger: logger.log("Flow", "  - Synchronizer '%s' met completion condition." % node_id)
 		
 		# Fire outputs
-		_fire_outputs(node_def, instance, inputs_received)
+		_fire_outputs(node_def, instance, inputs_received, controller)
 		
 		# Mark logically complete (cleanup state)
 		instance.set_node_active(node_id, false)
@@ -59,8 +65,8 @@ func handle_input(node_def: SynchronizeNodeResource, instance: QuestInstance, re
 	else:
 		if logger: logger.log("Flow", "  - Synchronizer '%s' waiting. State: %s" % [node_id, inputs_received])
 
-func _fire_outputs(node_def: SynchronizeNodeResource, instance: QuestInstance, inputs_state: Array) -> void:
-	var connections = _controller._node_connections.get(node_def.id, [])
+func _fire_outputs(node_def: SynchronizeNodeResource, instance: QuestInstance, inputs_state: Array, controller: QuestController) -> void:
+	var connections = controller._node_connections.get(node_def.id, [])
 
 	for i in range(node_def.outputs.size()):
 		var output_port = node_def.outputs[i]
@@ -71,7 +77,7 @@ func _fire_outputs(node_def: SynchronizeNodeResource, instance: QuestInstance, i
 			# We construct a temporary context just for this check if needed,
 			# OR we ensure ConditionResource reads from instance if implemented.
 			# Since CHECK_SYNCHRONIZER relies on the array, we pass it via a Dictionary context.
-			var check_context = _controller._execution_context
+			var check_context = controller._execution_context
 			
 			if output_port.condition.type == ConditionResource.ConditionType.CHECK_SYNCHRONIZER:
 				check_context = { "sync_inputs_received_array": inputs_state }
@@ -81,12 +87,10 @@ func _fire_outputs(node_def: SynchronizeNodeResource, instance: QuestInstance, i
 		if should_fire:
 			for connection in connections:
 				if connection.from_port == i:
-					var next_node_def = _controller._node_definitions.get(connection.to_node)
+					var next_node_def = controller._node_definitions.get(connection.to_node)
 					if next_node_def:
-						_controller._activate_node(next_node_def, connection.to_port)
+						controller._activate_node(next_node_def, connection.to_port)
 
 func clear():
 	# No internal state to clear anymore
 	pass
-
-# NOTE: save/load removed. State is in QuestInstance.

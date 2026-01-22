@@ -17,12 +17,15 @@ func initialize():
 	else:
 		push_warning("QWLogger: Debug settings file not found. All logs will be printed.")
 
-# The main logging function.
+# The main logging function (Info/Debug).
 func log(category: String, message: String):
-	# Default to 'true' if a category was added but not yet in the settings file.
 	if _active_categories.get(category, true):
 		print("[%s] %s" % [category.to_upper(), message])
 
-# A dedicated function for warnings, which are always shown.
+# Warnings (Always visible + pushed to Debugger Debugger)
 func warn(category: String, message: String):
 	push_warning("[%s] %s" % [category.to_upper(), message])
+
+# Errors (Always visible + pushed to Debugger + Pause on Error potential)
+func error(category: String, message: String):
+	push_error("[%s] %s" % [category.to_upper(), message])

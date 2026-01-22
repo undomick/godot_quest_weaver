@@ -74,7 +74,8 @@ func _validate_condition(condition: ConditionResource, node_id: String) -> Array
 			var target_id = condition.quest_id
 			if target_id.is_empty():
 				results.append(ValidationResult.new(ValidationResult.Severity.ERROR, "Check Quest Status: No target Quest ID specified.", node_id))
-			elif is_instance_valid(_quest_registry) and not target_id in _quest_registry.registered_quest_ids:
+			
+			elif is_instance_valid(_quest_registry) and not _quest_registry.quest_path_map.has(target_id):
 				results.append(ValidationResult.new(
 					ValidationResult.Severity.WARNING, "Check Quest Status: Target Quest ID '%s' not found in Quest Registry." % target_id, node_id))
 		

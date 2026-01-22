@@ -81,7 +81,9 @@ func check(context: Variant, instance: QuestInstance = null) -> bool:
 					if is_instance_valid(context.game_state):
 						actual_value = context.game_state.get_variable(variable_name)
 			
-			return _compare_values(actual_value, expected_value_string)
+			# NEW: Use centralized parsing and logic
+			var expected_value = QWConditionLogic.parse_string_to_variant(expected_value_string)
+			return QWConditionLogic.compare(actual_value, expected_value, operator)
 			
 		ConditionType.CHECK_OBJECTIVE_STATUS:
 			if not is_instance_valid(controller): return false
@@ -122,34 +124,6 @@ func _get_controller_safely(context: Variant) -> Node:
 		return main_loop.root.get_node_or_null("QuestWeaverServices") # Returns services node, need controller from it
 	
 	return null
-
-func _compare_values(actual_value: Variant, expected_value_str: String) -> bool:
-	if actual_value == null: return false
-	
-	var expected_value: Variant = _parse_string_to_variant(expected_value_str)
-	
-	if typeof(actual_value) != typeof(expected_value):
-		if not (actual_value is float and expected_value is int) and \
-		   not (actual_value is int and expected_value is float):
-			return false
-			
-	match operator:
-		Operator.EQUALS: return actual_value == expected_value
-		Operator.NOT_EQUALS: return actual_value != expected_value
-		Operator.GREATER_THAN: return actual_value > expected_value
-		Operator.LESS_THAN: return actual_value < expected_value
-		Operator.GREATER_OR_EQUAL: return actual_value >= expected_value
-		Operator.LESS_OR_EQUAL: return actual_value <= expected_value
-		
-	return false
-
-func _parse_string_to_variant(text: String) -> Variant:
-	var parsed_value: Variant = text
-	if text.is_valid_int(): parsed_value = text.to_int()
-	elif text.is_valid_float(): parsed_value = text.to_float()
-	elif text.to_lower() == "true": parsed_value = true
-	elif text.to_lower() == "false": parsed_value = false
-	return parsed_value
 
 func to_dictionary() -> Dictionary:
 	var sub_conditions_data = []

@@ -25,17 +25,18 @@ func load_state(controller: QuestController, data: Dictionary) -> void:
 	if not instances_data is Array: return
 
 	for inst_data in instances_data:
-		# Instanz laden
+		# load Instance
 		var instance = QuestInstance.new("") 
 		instance.load_save_data(inst_data)
 		
-		# Validation: Prüfen ob die Definition existiert
-		# Wir nutzen die generische Map im Controller (siehe Controller-Anpassung)
-		if not controller._id_to_context_node_map.has(instance.file_id):
+		# Validation 1: Check if the Quest File still exists
+		if not controller._id_to_context_node_map.has(instance.file_id) and not controller._node_to_file_id_map.values().has(instance.file_id):
 			if logger: logger.warn("SaveLoad", "Loaded quest '%s' but no definition found. Skipping." % instance.file_id)
 			continue
-			
-		# Registrieren unter FILE ID
+		
+		# Validation 2: Check if the Nodes inside still exist (Update protection)
+		_sanitize_instance_data(controller, instance)
+		
 		controller._active_instances[instance.file_id] = instance
 
 	# Restore Runtime Hooks
@@ -47,7 +48,6 @@ func load_state(controller: QuestController, data: Dictionary) -> void:
 	# Notify UI
 	for file_id in controller._active_instances:
 		var inst = controller._active_instances[file_id]
-		# Signal mit Logical ID senden (falls vorhanden), sonst File ID
 		var signal_id = inst.quest_id if not inst.quest_id.is_empty() else inst.file_id
 		controller.quest_data_changed.emit(signal_id)
 
@@ -61,54 +61,37 @@ func _restore_event_listeners(controller: QuestController) -> void:
 	
 	for instance: QuestInstance in controller._active_instances.values():
 		for node_id in instance.active_node_ids:
+			# Safety check: if node does not exist in definition, skip (Sanitization handled this already, but double check is fine)
 			var node_def = controller._node_definitions.get(node_id)
+			if not node_def: continue
 			
 			if node_def is EventListenerNodeResource:
 				event_manager.register_listener(node_def)
 			elif node_def is TaskNodeResource:
-				_restore_task_listeners(controller, node_def, instance)
+				# Use the shared static logic from the Executor
+				if is_instance_valid(controller._execution_context):
+					TaskNodeExecutor.register_listeners(controller._execution_context, node_def, instance)
 
-func _restore_task_listeners(controller: QuestController, task_node: TaskNodeResource, instance: QuestInstance):
-	var context = controller._execution_context
-	if not is_instance_valid(context): return
+func _sanitize_instance_data(controller: QuestController, instance: QuestInstance) -> void:
+	var nodes_to_remove: Array[String] = []
 	
-	for objective in task_node.objectives:
-		if instance.get_objective_status(objective.id) == 2:
-			continue
+	# 1. Check Active Nodes (Critical for runtime crashes)
+	for node_id in instance.active_node_ids.keys():
+		if not controller._node_definitions.has(node_id):
+			nodes_to_remove.append(node_id)
+	
+	for invalid_id in nodes_to_remove:
+		instance.active_node_ids.erase(invalid_id)
 		
-		# Resolve Params from Instance Variables (which are already loaded at this point)
-		var resolved_params = {}
-		for key in objective.trigger_params:
-			resolved_params[key] = instance.resolve_parameter(objective.trigger_params[key])
+		var logger = controller._get_logger()
+		if logger:
+			logger.warn("SaveLoad", "Sanitized savegame: Node '%s' in quest '%s' no longer exists. Removed from active state." % [invalid_id, instance.file_id])
 
-		var wrapper = {
-			"objective": objective,
-			"file_id": instance.file_id,
-			"task_node_id": task_node.id,
-			"resolved_params": resolved_params
-		}
-		
-		match objective.trigger_type:
-			ObjectiveResource.TriggerType.ITEM_COLLECT:
-				var item_id = resolved_params.get("item_id")
-				if item_id: _add_listener(context.item_objective_listeners, str(item_id), wrapper)
+	# 2. Check Node States (Cleanup of stale data)
+	nodes_to_remove.clear()
+	for node_id in instance.node_states.keys():
+		if not controller._node_definitions.has(node_id):
+			nodes_to_remove.append(node_id)
 			
-			ObjectiveResource.TriggerType.KILL:
-				var enemy_id = resolved_params.get("enemy_id")
-				if enemy_id: _add_listener(context.kill_objective_listeners, str(enemy_id), wrapper)
-				
-			ObjectiveResource.TriggerType.INTERACT:
-				var target = resolved_params.get("target_path")
-				if target: _add_listener(context.interact_objective_listeners, str(target), wrapper)
-				
-			ObjectiveResource.TriggerType.LOCATION_ENTER:
-				var loc = resolved_params.get("location_id")
-				if loc: _add_listener(context.location_objective_listeners, str(loc), wrapper)
-
-func _add_listener(dict: Dictionary, key: String, wrapper: Dictionary):
-	if not dict.has(key): dict[key] = []
-	# Duplikat-Check vergleicht jetzt Wrapper-Inhalte
-	for existing in dict[key]:
-		if existing.file_id == wrapper.file_id and existing.objective == wrapper.objective:
-			return
-	dict[key].append(wrapper)
+	for invalid_id in nodes_to_remove:
+		instance.node_states.erase(invalid_id)

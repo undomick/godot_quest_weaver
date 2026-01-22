@@ -6,19 +6,37 @@ extends RefCounted
 ## of a quest graph. It is created once and then passed through the execution flow.
 
 var game_state: Node
-var quest_controller: QuestController
-var logger: QWLogger
 var services: Node
 
-# Dictionaries mapping specific IDs (items, enemies, interaction paths) to active Objectives.
+var logger: QWLogger:
+	get:
+		if is_instance_valid(services) and services.get("logger"):
+			return services.logger
+		return null
+
+var _controller_weak: WeakRef 
+var quest_controller: QuestController:
+	get:
+		if _controller_weak:
+			return _controller_weak.get_ref() as QuestController
+		return null
+
 var item_objective_listeners: Dictionary = {}
 var kill_objective_listeners: Dictionary = {}
 var interact_objective_listeners: Dictionary = {}
 var location_objective_listeners: Dictionary = {} 
 
-## Constructor to set all dependencies upon creation.
 func _init(p_controller: QuestController, p_game_state: Node, p_logger: QWLogger, p_services: Node) -> void:
-	self.quest_controller = p_controller
+	self._controller_weak = weakref(p_controller)
 	self.game_state = p_game_state
-	self.logger = p_logger
 	self.services = p_services
+
+func cleanup() -> void:
+	game_state = null
+	services = null
+	_controller_weak = null
+	
+	item_objective_listeners.clear()
+	kill_objective_listeners.clear()
+	interact_objective_listeners.clear()
+	location_objective_listeners.clear()

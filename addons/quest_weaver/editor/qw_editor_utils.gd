@@ -17,26 +17,20 @@ static func clear_cache() -> void:
 
 ## Populates an AutoCompleteLineEdit with all item IDs from the registry.
 static func populate_item_completer(completer: AutoCompleteLineEdit):
-	# Step 1: Check if we have already loaded the data.
 	if not _item_registry_loaded:
 		_load_item_registry_data()
-	
-	# Step 2: Use the cached data.
 	completer.set_items(_cached_item_ids)
 
 ## Populates an AutoCompleteLineEdit with all quest IDs from the registry.
 static func populate_quest_id_completer(completer: AutoCompleteLineEdit):
-	# Step 1: Check if we have already loaded the data.
 	if not _quest_registry_loaded:
 		_load_quest_registry_data()
-	
-	# Step 2: Use the cached data.
 	completer.set_items(_cached_quest_ids)
 
 # Internal function to load item data and fill the cache.
 static func _load_item_registry_data() -> void:
 	_cached_item_ids.clear()
-	_item_registry_loaded = true # Mark as loaded even if it fails, to prevent retries.
+	_item_registry_loaded = true 
 
 	if not is_instance_valid(QWConstants.get_settings()) or QWConstants.get_settings().item_registry_path.is_empty():
 		_cached_item_ids.append("!Error: Item Registry path not set!")
@@ -61,7 +55,7 @@ static func _load_item_registry_data() -> void:
 # Internal function to load quest data and fill the cache.
 static func _load_quest_registry_data() -> void:
 	_cached_quest_ids.clear()
-	_quest_registry_loaded = true # Mark as loaded even if it fails.
+	_quest_registry_loaded = true
 
 	if QWConstants.get_settings().quest_registry_path.is_empty() or not ResourceLoader.exists(QWConstants.get_settings().quest_registry_path):
 		_cached_quest_ids.append("!Error: Quest Registry path not set!")
@@ -70,9 +64,9 @@ static func _load_quest_registry_data() -> void:
 	var registry: QuestRegistry = ResourceLoader.load(QWConstants.get_settings().quest_registry_path, "QuestRegistry", ResourceLoader.CACHE_MODE_REPLACE)
 	
 	if is_instance_valid(registry):
-		if registry.registered_quest_ids.is_empty():
+		if registry.quest_path_map.is_empty():
 			_cached_quest_ids.append("(No Quests found. Save a graph with an ID)")
 		else:
-			_cached_quest_ids = registry.registered_quest_ids
+			_cached_quest_ids = registry.get_all_ids()
 	else:
 		_cached_quest_ids.append("!Error: Could not load Quest Registry!")

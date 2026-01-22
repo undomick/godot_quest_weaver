@@ -11,6 +11,7 @@ var import_plugin: EditorImportPlugin
 var export_plugin: EditorExportPlugin
 var saver: ResourceFormatSaver
 
+var registry_inspector: EditorInspectorPlugin
 
 func _enable_plugin() -> void:
 	var base_path = get_plugin_path()
@@ -47,7 +48,12 @@ func _enter_tree() -> void:
 			validator_dock = QWConstants.ValidatorDockScene.instantiate()
 			validator_dock.name = QWConstants.VALIDATOR_DOCK_NAME
 			add_control_to_bottom_panel(validator_dock, "Quest Validator")
-
+		
+		var inspector_script = load("res://addons/quest_weaver/editor/inspector/qw_registry_inspector.gd")
+		if inspector_script:
+			registry_inspector = inspector_script.new()
+			add_inspector_plugin(registry_inspector)
+		
 		debugger_node = QuestWeaverDebugger.new()
 		debugger_node.name = "QuestWeaverDebuggerHost"
 		add_child(debugger_node)
@@ -77,6 +83,9 @@ func _exit_tree() -> void:
 			main_view.queue_free()
 		if is_instance_valid(debugger_node) and is_instance_valid(debugger_node.get_plugin_instance()):
 			remove_debugger_plugin(debugger_node.get_plugin_instance())
+		if is_instance_valid(registry_inspector):
+			remove_inspector_plugin(registry_inspector)
+			registry_inspector = null
 		
 		remove_custom_type(QWConstants.RESOURCE_TYPE_NAME)
 		

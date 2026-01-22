@@ -67,10 +67,25 @@ func execute(context: ExecutionContext, node: GraphNodeResource, instance: Quest
 
 	# --- 5. Wait or Continue ---
 	if msg_node.wait_for_completion:
+		# Calculate a safety timeout to prevent infinite loops (Expected duration + 5s buffer)
+		var expected_duration = msg_node.duration_in + msg_node.hold_duration + msg_node.duration_out
+		var timeout_ms = (expected_duration + 5.0) * 1000.0
+		var start_time = Time.get_ticks_msec()
+		
 		# Wait loop: Only proceed if the signal returns THIS node's ID.
-		# This prevents signal cross-talk if multiple messages fire rapidly.
 		while true:
+			# Safety: Break if manager was destroyed (e.g. scene change)
+			if not is_instance_valid(presentation_manager):
+				if logger: logger.warn("Executor", "PresentationManager lost during wait. Aborting wait.")
+				break
+			
+			# Safety: Break if timeout exceeded
+			if (Time.get_ticks_msec() - start_time) > timeout_ms:
+				if logger: logger.warn("Executor", "ShowUIMessage timed out (Signal lost?). Force continuing.")
+				break
+			
 			var finished_id = await presentation_manager.presentation_completed
+			
 			if finished_id == msg_node.id:
 				break
 		

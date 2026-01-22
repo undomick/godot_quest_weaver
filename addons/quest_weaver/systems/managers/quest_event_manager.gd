@@ -6,10 +6,13 @@ extends RefCounted
 ## Stores mapping: EventName -> List of NodeIDs.
 
 var _event_listeners: Dictionary = {} 
-var _controller: QuestController
+var _controller_weak: WeakRef
 
 func _init(p_controller: QuestController):
-	self._controller = p_controller
+	self._controller_weak = weakref(p_controller)
+
+func _get_controller() -> QuestController:
+	return _controller_weak.get_ref() as QuestController
 
 func register_listener(listener_node: EventListenerNodeResource):
 	var evt = listener_node.event_name
@@ -26,6 +29,9 @@ func unregister_listener(listener_node: EventListenerNodeResource):
 			_event_listeners.erase(evt)
 
 func on_global_event(event_name: String, payload: Dictionary):
+	var controller = _get_controller()
+	if not controller: return
+
 	if not _event_listeners.has(event_name): return
 	
 	# Iterate copy to allow modifications during loop
@@ -33,15 +39,14 @@ func on_global_event(event_name: String, payload: Dictionary):
 	
 	for node_id in listeners:
 		# 1. Resolve Instance
-		var quest_id = _controller.get_quest_id_for_node(node_id)
-		var instance: QuestInstance = _controller._active_instances.get(quest_id)
+		var quest_id = controller.get_quest_id_for_node(node_id)
+		var instance: QuestInstance = controller._active_instances.get(quest_id)
 		
 		# If instance or node is not active, ignore/cleanup
 		if not instance or not instance.is_node_active(node_id):
-			# Lazy cleanup: The listener might be stale if cleanup failed elsewhere
 			continue
 			
-		var node_def = _controller._node_definitions.get(node_id)
+		var node_def = controller._node_definitions.get(node_id)
 		if node_def is EventListenerNodeResource:
 			# 2. Check Conditions (Instance-aware)
 			var condition_passes = true
@@ -53,15 +58,15 @@ func on_global_event(event_name: String, payload: Dictionary):
 			
 			# 3. Trigger
 			if condition_passes:
-				if _controller._logger:
-					_controller._logger.log("Flow", "Event '%s' triggered listener '%s'." % [event_name, node_id])
+				if controller._logger:
+					controller._logger.log("Flow", "Event '%s' triggered listener '%s'." % [event_name, node_id])
 				
 				if node_def.keep_listening:
-					_controller._trigger_next_nodes_from_port(node_def, 0)
+					controller._trigger_next_nodes_from_port(node_def, 0)
 				else:
 					# One-shot: Remove from my list and complete node
 					_event_listeners[event_name].erase(node_id)
-					_controller.complete_node(node_def)
+					controller.complete_node(node_def)
 
 func clear():
 	_event_listeners.clear()
@@ -76,38 +81,28 @@ func remove_listeners_for_quest(nodes_in_quest: Array):
 # --- Helper for Simple Conditions ---
 func _check_simple_conditions(conditions: Array[Dictionary], payload: Dictionary) -> bool:
 	if conditions.is_empty(): return true
+	
 	for c in conditions:
 		var key = c.get("key", "")
 		var op = c.get("op", 0)
 		var val_str = c.get("value", "")
 		
 		if key.is_empty(): continue
-		if op == 6: # HAS
+		
+		# Special handling for "HAS" (Index 6 in SimpleOperator enum)
+		if op == 6: 
 			if not payload.has(key): return false
 			continue
 			
 		if not payload.has(key):
-			if op != 1: return false # Only NOT_EQUALS passes on missing key
+			# If key is missing, only NOT_EQUALS (1) should pass
+			if op != QWConditionLogic.Op.NOT_EQUALS: return false 
 			continue
 			
 		var actual = payload[key]
-		var expected = _parse_val(val_str)
-		if not _compare(actual, expected, op): return false
+		var expected = QWConditionLogic.parse_string_to_variant(val_str)
+		
+		if not QWConditionLogic.compare(actual, expected, op): 
+			return false
+			
 	return true
-
-func _compare(a, b, op) -> bool:
-	match op:
-		0: return a == b
-		1: return a != b
-		2: return a > b
-		3: return a < b
-		4: return a >= b
-		5: return a <= b
-	return false
-
-func _parse_val(t: String):
-	if t.is_valid_int(): return t.to_int()
-	if t.is_valid_float(): return t.to_float()
-	if t.to_lower() == "true": return true
-	if t.to_lower() == "false": return false
-	return t

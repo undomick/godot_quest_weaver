@@ -41,6 +41,8 @@ var node_states: Dictionary = {}
 # Value: Dictionary { "status": int, "progress": int }
 var objective_states: Dictionary = {}
 
+static var _resolver_regex: RegEx = null 
+
 # --- INITIALIZATION ---
 
 func _init(p_file_id: String, p_graph: QuestGraphResource = null):
@@ -119,16 +121,27 @@ func set_variable(key: String, value: Variant) -> void:
 func get_variable(key: String, default: Variant = null) -> Variant:
 	return variables.get(key, default)
 
-## Replaces placeholders like "{amount}" in text with actual variable values.
+## Replaces placeholders like "{amount}" in text with actual variable values using RegEx.
 func resolve_text(text: String) -> String:
-	if variables.is_empty():
+	# Optimization: Early exit if string is empty or has no brackets
+	if text.is_empty() or not "{" in text:
 		return text
 		
+	if _resolver_regex == null:
+		_resolver_regex = RegEx.new()
+		_resolver_regex.compile("\\{(.*?)\\}") # Matches pattern like {variable_name}
+
 	var result = text
-	for key in variables:
-		var placeholder = "{%s}" % key
-		if result.contains(placeholder):
+	var matches = _resolver_regex.search_all(text)
+	
+	for regex_match in matches:
+		var placeholder = regex_match.get_string(0) # e.g. "{amount}"
+		var key = regex_match.get_string(1)         # e.g. "amount"
+		
+		if variables.has(key):
+			# Replace all occurrences of this placeholder with the value
 			result = result.replace(placeholder, str(variables[key]))
+			
 	return result
 
 ## Resolves a parameter value.
